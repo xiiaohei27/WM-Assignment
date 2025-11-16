@@ -1,58 +1,27 @@
-﻿@{
+﻿@model List<Movie>
+@{
     ViewBag.Title = "Home | Index";
 }
 
-<table class="table">
-    <caption>Members</caption>
-    <tr>
-        <th>Email</th>
-        <th>Password</th>
-        <th>Name</th>
-        <th>PhotoURL</th>
-    </tr>
-    @foreach (Member m in ViewBag.Members)
+<h2>Featured Movie</h2>
+<div class="featured-movie">
+    <a asp-action="Detail" asp-controller="Movie" asp-route-id="@ViewBag.Featured.Id">
+        <img src="/images/@ViewBag.Featured.Image" alt="@ViewBag.Featured.Title" style="width:150px; height:auto;" />
+    </a>
+    <h3>@ViewBag.Featured.Title</h3>
+    <p>@ViewBag.Featured.Genre</p>
+</div>
+
+<h2>Now Showing</h2>
+<div class="movies-grid">
+    @foreach (var movie in Model)
     {
-        <tr>
-            <td>@m.Email</td>
-            <td>123456</td>
-            <td>@m.Name</td>
-            <td>@m.PhotoURL</td>
-        </tr>
+        <div class="movie-card">
+            <a asp-action="Detail" asp-controller="Movie" asp-route-id="@movie.Id">
+                <img src="/images/@movie.Image" alt="@movie.Title" style="width:150px; height:auto;" />
+            </a>
+            <h3>@movie.Title</h3>
+            <p>@movie.Genre</p>
+        </div>
     }
-</table>
-
-<br>
-
-<table class="table">
-    <caption>Types</caption>
-    <tr>
-        <th>Id</th>
-        <th>Name</th>
-        <th>Price</th>
-    </tr>
-    @foreach (Demo.Models.Type t in ViewBag.Types)
-    {
-        <tr>
-            <td>@t.Id</td>
-            <td>@t.Name</td>
-            <td>@t.Price</td>
-        </tr>
-    }
-</table>
-
-<br>
-
-<table class="table">
-    <caption>Rooms</caption>
-    <tr>
-        <th>Id</th>
-        <th>TypeId</th>
-    </tr>
-    @foreach (Room r in ViewBag.Rooms)
-    {
-        <tr>
-            <td>@r.Id</td>
-            <td>@r.TypeId</td>
-        </tr>
-    }
-</table>
+</div>
