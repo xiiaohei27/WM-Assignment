@@ -33,3 +33,4 @@ project.assets.json
 *.db
 *.cache
 *.pdb
+/Main/DB.mdf
