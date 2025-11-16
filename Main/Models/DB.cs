@@ -1,100 +1,85 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Net.Sockets;
 
-namespace Main.Models;
+namespace Demo.Models;
 
 #nullable disable warnings
 
 public class DB(DbContextOptions options) : DbContext(options)
 {
-    // DB Sets
+    // DbSet
     public DbSet<User> Users { get; set; }
-    public DbSet<Admin> Admins { get; set; }
-    public DbSet<Member> Members { get; set; }
-
-    public DbSet<Type> Types { get; set; }
-    public DbSet<Room> Rooms { get; set; }
-    public DbSet<Reservation> Reservations { get; set; }
+    public DbSet<Movie> Movies { get; set; }
+    public DbSet<Showtime> Showtimes { get; set; }
+    public DbSet<Ticket> Tickets { get; set; }
 }
 
 // Entity Classes -------------------------------------------------------------
 
 public class User
 {
-    [Key, MaxLength(100)]
-    public string Email { get; set; }
-    [MaxLength(100)]
-    public string Hash { get; set; }
-    [MaxLength(100)]
-    public string Name { get; set; }
-
-    public string Role => GetType().Name;
-}
-
-public class Admin : User
-{
-
-}
-
-public class Member : User
-{
-    [MaxLength(100)]
-    public string PhotoURL { get; set; }
-
-    // Navigation Properties
-    public List<Reservation> Reservations { get; set; } = [];
-}
-
-// Type, Room, Reservation
-
-public class Type
-{
-    [Key, MaxLength(1)]
-    public string Id { get; set; }
-
-    [MaxLength(100)]
-    public string Name { get; set; }
-
-    [Precision(6, 2)]
-    public decimal Price { get; set; }
-
-    // Navigation Properties
-    public List<Room> Rooms { get; set; } = [];
-}
-
-public class Room
-{
-    [Key, MaxLength(4)]
-    public string Id { get; set; }
-
-    // Foreign Keys
-    public string TypeId { get; set; }
-
-    // Navigation Properties
-    public Type Type { get; set; }
-    public List<Reservation> Reservations { get; set; } = [];
-}
-
-public class Reservation
-{
-    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key]
     public int Id { get; set; }
 
-    public DateOnly CheckIn { get; set; }
+    [Required, MaxLength(50)]
+    public string Username { get; set; }
 
-    public DateOnly CheckOut { get; set; }
+    [Required, MaxLength(50)]
+    public string Password { get; set; }
 
-    [Precision(6, 2)]
-    public decimal Price { get; set; }
+    [Required, MaxLength(10)]
+    public string Role { get; set; }   // Admin / Customer
 
-    public bool Paid { get; set; }
+    public List<Ticket> Tickets { get; set; } = new();
+}
 
-    // Foreign Keys (MemberEmail, RoomId)
-    public string MemberEmail { get; set; }
-    public string RoomId { get; set; }
+public class Movie
+{
+    [Key]
+    public int Id { get; set; }
 
-    // Navigation Properties
-    public Member Member { get; set; }
-    public Room Room { get; set; }
+    [Required, MaxLength(100)]
+    public string Title { get; set; }
+
+    [MaxLength(50)]
+    public string Genre { get; set; }
+
+    public DateTime ReleaseDate { get; set; }
+
+    [MaxLength(200)]
+    public string Image { get; set; }
+
+    public List<Showtime> Showtimes { get; set; } = new();
+}
+
+public class Showtime
+{
+    [Key]
+    public int Id { get; set; }
+
+    public int MovieId { get; set; }   // FK
+
+    public DateTime StartTime { get; set; }
+
+    public int TotalSeats { get; set; }
+
+    public Movie Movie { get; set; }
+    public List<Ticket> Tickets { get; set; } = new();
+}
+
+public class Ticket
+{
+    [Key]
+    public int Id { get; set; }
+
+    public int UserId { get; set; }      // FK
+    public int ShowtimeId { get; set; }  // FK
+
+    public int SeatNumber { get; set; }
+
+    public DateTime BookingTime { get; set; } = DateTime.Now;
+
+    public User User { get; set; }
+    public Showtime Showtime { get; set; }
 }
