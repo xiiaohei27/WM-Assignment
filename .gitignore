@@ -1,0 +1,34 @@
+## Ignore Visual Studio generated files
+.vs/
+*.user
+*.suo
+
+## Build results
+bin/
+obj/
+Debug/
+Release/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+project.assets.json
+*.nuget.props
+*.nuget.targets
+
+## Visual Studio cache/temp
+.vscode/
+*.psess
+*.vspx
+*.pidb
+*.svclog
+
+## Logs
+*.log
+
+## Other
+*.tmp
+*.db
+*.cache
+*.pdb
