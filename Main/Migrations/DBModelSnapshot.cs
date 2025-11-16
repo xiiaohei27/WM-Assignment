@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Demo.Migrations
+namespace Main.Migrations
 {
     [DbContext(typeof(DB))]
     partial class DBModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace Demo.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Demo.Models.Movie", b =>
+            modelBuilder.Entity("Main.Models.Movie", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -48,7 +48,7 @@ namespace Demo.Migrations
                     b.ToTable("Movies");
                 });
 
-            modelBuilder.Entity("Demo.Models.Showtime", b =>
+            modelBuilder.Entity("Main.Models.Showtime", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,7 +72,7 @@ namespace Demo.Migrations
                     b.ToTable("Showtimes");
                 });
 
-            modelBuilder.Entity("Demo.Models.Ticket", b =>
+            modelBuilder.Entity("Main.Models.Ticket", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -101,7 +101,7 @@ namespace Demo.Migrations
                     b.ToTable("Tickets");
                 });
 
-            modelBuilder.Entity("Demo.Models.User", b =>
+            modelBuilder.Entity("Main.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -129,9 +129,9 @@ namespace Demo.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Demo.Models.Showtime", b =>
+            modelBuilder.Entity("Main.Models.Showtime", b =>
                 {
-                    b.HasOne("Demo.Models.Movie", "Movie")
+                    b.HasOne("Main.Models.Movie", "Movie")
                         .WithMany("Showtimes")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -140,15 +140,15 @@ namespace Demo.Migrations
                     b.Navigation("Movie");
                 });
 
-            modelBuilder.Entity("Demo.Models.Ticket", b =>
+            modelBuilder.Entity("Main.Models.Ticket", b =>
                 {
-                    b.HasOne("Demo.Models.Showtime", "Showtime")
+                    b.HasOne("Main.Models.Showtime", "Showtime")
                         .WithMany("Tickets")
                         .HasForeignKey("ShowtimeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Demo.Models.User", "User")
+                    b.HasOne("Main.Models.User", "User")
                         .WithMany("Tickets")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -159,17 +159,17 @@ namespace Demo.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Demo.Models.Movie", b =>
+            modelBuilder.Entity("Main.Models.Movie", b =>
                 {
                     b.Navigation("Showtimes");
                 });
 
-            modelBuilder.Entity("Demo.Models.Showtime", b =>
+            modelBuilder.Entity("Main.Models.Showtime", b =>
                 {
                     b.Navigation("Tickets");
                 });
 
-            modelBuilder.Entity("Demo.Models.User", b =>
+            modelBuilder.Entity("Main.Models.User", b =>
                 {
                     b.Navigation("Tickets");
                 });

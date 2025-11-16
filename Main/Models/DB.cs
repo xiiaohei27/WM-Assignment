@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Sockets;
 
-namespace Demo.Models;
+namespace Main.Models;
 
 #nullable disable warnings
 

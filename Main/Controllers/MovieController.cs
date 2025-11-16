@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Demo.Controllers;
+namespace Main.Controllers;
 
 public class MovieController(DB db) : Controller
 {

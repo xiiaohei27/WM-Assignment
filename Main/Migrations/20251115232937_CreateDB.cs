@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Demo.Migrations
+namespace Main.Migrations
 {
     /// <inheritdoc />
     public partial class CreateDB : Migration
