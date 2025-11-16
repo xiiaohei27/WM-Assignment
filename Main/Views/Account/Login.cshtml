@@ -1,33 +1,11 @@
-﻿@model LoginVM
-
-@{
+﻿@{
     ViewBag.Title = "Account | Login";
 }
 
-<form class="form" method="post">
-    <div asp-validation-summary="ModelOnly"></div>
-
-    <label asp-for="Email"></label>
-    <input asp-for="Email" autofocus>
-    <span asp-validation-for="Email"></span>
-
-    <label asp-for="Password"></label>
-    <input asp-for="Password">
-    <span asp-validation-for="Password"></span>
-
-    <br>
-    <label>
-        <input asp-for="RememberMe">Remember Me
-    </label>
-    <br>
-
-    <section>
-        <button>Login</button>
-        <button type="reset">Reset</button>
-    </section>
+<form asp-controller="Account" asp-action="Login" method="post">
+    <input type="text" name="username" placeholder="Username" required />
+    <input type="password" name="password" placeholder="Password" required />
+    <button type="submit">Login</button>
 </form>
-
-<p>
-    [ <a href="/Account/Register">Register</a> |
-      <a href="/Account/ResetPassword">Reset Password</a> ]
-</p>
+<p>@ViewBag.Error</p>
+<p>Don't have an account? <a asp-controller="Account" asp-action="Register">Register here</a></p>

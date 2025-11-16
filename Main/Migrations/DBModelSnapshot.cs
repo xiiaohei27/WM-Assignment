@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Main.Migrations
+namespace Demo.Migrations
 {
     [DbContext(typeof(DB))]
     partial class DBModelSnapshot : ModelSnapshot
@@ -17,12 +17,12 @@ namespace Main.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Demo.Models.Reservation", b =>
+            modelBuilder.Entity("Demo.Models.Movie", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,165 +30,148 @@ namespace Main.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateOnly>("CheckIn")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly>("CheckOut")
-                        .HasColumnType("date");
-
-                    b.Property<string>("MemberEmail")
+                    b.Property<string>("Genre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<bool>("Paid")
-                        .HasColumnType("bit");
+                    b.Property<DateTime>("ReleaseDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("decimal(6,2)");
-
-                    b.Property<string>("RoomId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(4)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MemberEmail");
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("Reservations");
-                });
-
-            modelBuilder.Entity("Demo.Models.Room", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(4)
-                        .HasColumnType("nvarchar(4)");
-
-                    b.Property<string>("TypeId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(1)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TypeId");
-
-                    b.ToTable("Rooms");
-                });
-
-            modelBuilder.Entity("Demo.Models.Type", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(1)
-                        .HasColumnType("nvarchar(1)");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("decimal(6,2)");
+                    b.HasKey("Id");
+
+                    b.ToTable("Movies");
+                });
+
+            modelBuilder.Entity("Demo.Models.Showtime", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TotalSeats")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Types");
+                    b.HasIndex("MovieId");
+
+                    b.ToTable("Showtimes");
+                });
+
+            modelBuilder.Entity("Demo.Models.Ticket", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("BookingTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SeatNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShowtimeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShowtimeId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Tickets");
                 });
 
             modelBuilder.Entity("Demo.Models.User", b =>
                 {
-                    b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("Discriminator")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Hash")
+                    b.Property<string>("Role")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Username")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("Email");
+                    b.HasKey("Id");
 
                     b.ToTable("Users");
-
-                    b.HasDiscriminator().HasValue("User");
-
-                    b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("Demo.Models.Admin", b =>
+            modelBuilder.Entity("Demo.Models.Showtime", b =>
                 {
-                    b.HasBaseType("Demo.Models.User");
-
-                    b.HasDiscriminator().HasValue("Admin");
-                });
-
-            modelBuilder.Entity("Demo.Models.Member", b =>
-                {
-                    b.HasBaseType("Demo.Models.User");
-
-                    b.Property<string>("PhotoURL")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasDiscriminator().HasValue("Member");
-                });
-
-            modelBuilder.Entity("Demo.Models.Reservation", b =>
-                {
-                    b.HasOne("Demo.Models.Member", "Member")
-                        .WithMany("Reservations")
-                        .HasForeignKey("MemberEmail")
+                    b.HasOne("Demo.Models.Movie", "Movie")
+                        .WithMany("Showtimes")
+                        .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Demo.Models.Room", "Room")
-                        .WithMany("Reservations")
-                        .HasForeignKey("RoomId")
+                    b.Navigation("Movie");
+                });
+
+            modelBuilder.Entity("Demo.Models.Ticket", b =>
+                {
+                    b.HasOne("Demo.Models.Showtime", "Showtime")
+                        .WithMany("Tickets")
+                        .HasForeignKey("ShowtimeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Member");
-
-                    b.Navigation("Room");
-                });
-
-            modelBuilder.Entity("Demo.Models.Room", b =>
-                {
-                    b.HasOne("Demo.Models.Type", "Type")
-                        .WithMany("Rooms")
-                        .HasForeignKey("TypeId")
+                    b.HasOne("Demo.Models.User", "User")
+                        .WithMany("Tickets")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Type");
+                    b.Navigation("Showtime");
+
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Demo.Models.Room", b =>
+            modelBuilder.Entity("Demo.Models.Movie", b =>
                 {
-                    b.Navigation("Reservations");
+                    b.Navigation("Showtimes");
                 });
 
-            modelBuilder.Entity("Demo.Models.Type", b =>
+            modelBuilder.Entity("Demo.Models.Showtime", b =>
                 {
-                    b.Navigation("Rooms");
+                    b.Navigation("Tickets");
                 });
 
-            modelBuilder.Entity("Demo.Models.Member", b =>
+            modelBuilder.Entity("Demo.Models.User", b =>
                 {
-                    b.Navigation("Reservations");
+                    b.Navigation("Tickets");
                 });
 #pragma warning restore 612, 618
         }
