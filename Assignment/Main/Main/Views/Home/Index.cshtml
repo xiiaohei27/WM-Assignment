@@ -1,0 +1,27 @@
+﻿@model List<Movie>
+@{
+    ViewBag.Title = "Home | Index";
+}
+
+<h2>Featured Movie</h2>
+<div class="featured-movie">
+    <a asp-action="Detail" asp-controller="Movie" asp-route-id="@ViewBag.Featured.Id">
+        <img src="/images/@ViewBag.Featured.Image" alt="@ViewBag.Featured.Title" style="width:150px; height:auto;" />
+    </a>
+    <h3>@ViewBag.Featured.Title</h3>
+    <p>@ViewBag.Featured.Genre</p>
+</div>
+
+<h2>Now Showing</h2>
+<div class="movies-grid">
+    @foreach (var movie in Model)
+    {
+        <div class="movie-card">
+            <a asp-action="Detail" asp-controller="Movie" asp-route-id="@movie.Id">
+                <img src="/images/@movie.Image" alt="@movie.Title" style="width:150px; height:auto;" />
+            </a>
+            <h3>@movie.Title</h3>
+            <p>@movie.Genre</p>
+        </div>
+    }
+</div>

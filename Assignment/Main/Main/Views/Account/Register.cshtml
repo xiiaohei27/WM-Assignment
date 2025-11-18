@@ -1,0 +1,10 @@
+﻿@{
+    ViewBag.Title = "Account | Register";
+}
+
+<form asp-controller="Account" asp-action="Register" method="post">
+    <input type="text" name="username" placeholder="Username" required />
+    <input type="password" name="password" placeholder="Password" required />
+    <button type="submit">Register</button>
+</form>
+<p>@ViewBag.Error</p>

@@ -1,0 +1,10 @@
+1	Inception	Sci-Fi	2010-07-16	inception-poster.jpg
+2	Avengers: Endgame	Action	2019-04-26	avengers-endgame-poster.jpg
+3	The Dark Knight	Action	2008-07-18	the-dark-knight-poster.jpg
+4	Interstellar	Sci-Fi	2014-11-07	interstellar-poster.jpg
+5	Parasite	Thriller	2019-05-30	parasite-poster.jpg
+6	Tenet	Sci-Fi	2020-08-26	tenet-poster.jpg
+7	Joker	Drama	2019-10-04	joker-poster.jpg
+8	Spider-Man: No Way Home	Action	2021-12-17	spider-man-no-way-home-poster.jpg
+9	Frozen 2	Animation	2019-11-22	frozen2-poster.jpg
+10	Black Panther	Action	2018-02-16	black-panther-poster.jpg

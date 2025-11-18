@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = "Account | Login";
+}
+
+<form asp-controller="Account" asp-action="Login" method="post">
+    <input type="text" name="username" placeholder="Username" required />
+    <input type="password" name="password" placeholder="Password" required />
+    <button type="submit">Login</button>
+</form>
+<p>@ViewBag.Error</p>
+<p>Don't have an account? <a asp-controller="Account" asp-action="Register">Register here</a></p>

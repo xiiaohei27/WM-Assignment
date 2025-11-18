@@ -1,0 +1,25 @@
+﻿@model IEnumerable<Movie>
+@{
+    ViewBag.Title = "Movie | Index";
+}
+
+<p>
+    <a href="?">All</a>
+
+    @foreach (var g in ViewBag.Genres)
+    {
+        <text>|</text>
+        <a href="?genre=@g">@g</a>
+    }
+</p>
+
+@foreach (var movie in Model)
+{
+    <div>
+        <a asp-action="Detail" asp-controller="Movie" asp-route-id="@movie.Id">
+            <img src="/images/@movie.Image" alt="@movie.Title" style="width:150px; height:auto;"/>
+        </a>
+        <h3>@movie.Title</h3>
+        <p>@movie.Genre</p>
+    </div>
+}
