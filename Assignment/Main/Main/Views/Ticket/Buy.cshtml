@@ -1,16 +1,1 @@
-﻿@model List<Main.Models.Showtime>
-@{
-    ViewBag.Title = "Select Showtime";
-}
-
-<h2>Select Showtime for @ViewBag.Movie.Title</h2>
-
-<ul>
-    @foreach (var show in Model)
-    {
-        <li>
-            @show.StartTime.ToString("yyyy-MM-dd HH:mm") - Seats: @show.TotalSeats
-            <a asp-controller="Showtime" asp-action="Seats" asp-route-id="@show.Id">Select</a>
-        </li>
-    }
-</ul>
+﻿@* This page is left blank for now... *@

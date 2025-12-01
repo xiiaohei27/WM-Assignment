@@ -5,7 +5,7 @@ namespace Main.Controllers;
 public class TicketController(DB db) : Controller
 {
     // GET: /Ticket/Buy/(MovieId)
-    public IActionResult Buy(int movieId)
+    public IActionResult Buy(string movieId)
     {
         var movie = db.Movies.Find(movieId);
         if (movie == null) return RedirectToAction("Index", "Home");

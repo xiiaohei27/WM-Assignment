@@ -1,0 +1,16 @@
+﻿@model IEnumerable<Cinema>
+@{
+    var movie = ViewBag.Movie as Movie;
+    ViewBag.Title = "Select Cinema for " + movie.Title;
+}
+
+@foreach (var cinema in Model)
+{
+    <div>
+        <a asp-action="SelectDate" asp-controller="Showtime"
+            asp-route-movieId="@movie.Id"
+            asp-route-cinemaId="@cinema.Id">
+            @cinema.Name
+        </a>
+    </div>
+}

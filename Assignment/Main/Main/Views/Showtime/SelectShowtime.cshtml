@@ -1,0 +1,18 @@
+﻿@model IEnumerable<Showtime>
+@{
+    var movie = (Movie)ViewBag.Movie;
+    var date = (DateTime)ViewBag.Date;
+    ViewBag.Title = "Select Showtime for " + movie.Title;
+}
+
+<h2>Select Showtime for @movie.Title on @date.ToString("dddd, MMM dd yyyy")</h2>
+
+@foreach (var show in Model)
+{
+    <div style="margin:10px 0;">
+        <a asp-controller="Seat" asp-action="SelectSeats"
+            asp-route-showtimeId="@show.Id">
+            @show.StartDateTime.ToString("hh:mm tt") - Hall: @show.Hall.Name
+        </a>
+    </div>
+}

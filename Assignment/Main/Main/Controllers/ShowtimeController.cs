@@ -1,24 +1,40 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Main.Controllers;
 
 public class ShowtimeController(DB db) : Controller
 {
-    // GET: /Showtime/Seats/(ShowtimeId)
-    public IActionResult Seats(int id) // id = ShowtimeId
+    // Step 1: Select available dates for a movie at a cinema
+    public IActionResult SelectDate(string movieId)
     {
-        var showtime = db.Showtimes.Find(id);
-        if (showtime == null) return RedirectToAction("Index", "Home");
+        var movie = db.Movies.Find(movieId);
+        if (movie == null) return RedirectToAction("Index", "Movie");
 
-        // Get the movie separately
-        var movie = db.Movies.Find(showtime.MovieId);
+        var dates = db.Showtimes
+                      .Where(s => s.MovieId == movieId)
+                      .Select(s => s.StartDateTime.Date)
+                      .Distinct()
+                      .ToList();
 
-        // Generate seat numbers
-        var seats = Enumerable.Range(1, showtime.TotalSeats).ToList();
+        ViewBag.Movie = movie;
+        return View(dates);
+    }
 
-        ViewBag.Showtime = showtime;
-        ViewBag.Movie = movie; // pass movie separately
-        ViewBag.Title = $"Seats for {showtime.Movie.Title} at {showtime.StartTime}";
-        return View(seats);
+    // Step 2: Select showtime for a movie at a cinema on a specific date
+    public IActionResult SelectShowtime(string movieId, DateTime date)
+    {
+        var movie = db.Movies.Find(movieId);
+        if (movie == null) return RedirectToAction("Index", "Movie");
+
+        var showtimes = db.Showtimes
+                          .Where(s => s.MovieId == movieId
+                          && s.StartDateTime.Date == date)
+                          .Include(s => s.Hall)
+                          .ToList();
+
+        ViewBag.Movie = movie;
+        ViewBag.Date = date;
+        return View(showtimes);
     }
 }
