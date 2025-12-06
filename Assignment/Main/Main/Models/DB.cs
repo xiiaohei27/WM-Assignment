@@ -23,6 +23,8 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
 
 public class User
 {
+    internal string Hash;
+
     [Key]
     public string Id { get; set; }
 
