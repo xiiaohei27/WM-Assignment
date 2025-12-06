@@ -1,72 +1,239 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Main.Controllers;
 
-public class AccountController(DB db) : Controller
+public class AccountController(DB db,
+                               Helper hp) : Controller
 {
-    public IActionResult Index()
-    {
-        return View();
-    }
-
+    // GET: Account/Login
     public IActionResult Login()
     {
         return View();
     }
 
+    // POST: Account/Login
     [HttpPost]
-    public IActionResult Login(string username, string password)
+    public IActionResult Login(LoginVM vm, string? returnURL)
     {
-        // Check user in database
-        var user = db.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
+        // (1) Get user (admin or member) record based on email (PK)
+        var u = db.Users.Find(vm.Email);
 
-        if (user != null)
+        // (2) Custom validation -> verify password
+        
+        if (u == null || !hp.VerifyPassword(u.Hash, vm.Password))
         {
-            // TODO: Add authentication/session logic
-            ViewBag.Message = $"Welcome, {user.Username}!";
-            return RedirectToAction("Index", "Home");
+            ModelState.AddModelError("", "Login credentials not matched.");
         }
-        else
+
+        if (ModelState.IsValid)
         {
-            ViewBag.Error = "Invalid username or password.";
-            return View();
+            TempData["Info"] = "Login successfully.";
+
+            // (3) Sign in
+            hp.SignIn(u!.Email, u.Role, vm.RememberMe);
+
+            // (4) Handle return URL
+            if (string.IsNullOrEmpty(returnURL))
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
+        
+        return View(vm);
     }
 
+    // GET: Account/Logout
+    public IActionResult Logout(string? returnURL)
+    {
+        TempData["Info"] = "Logout successfully.";
+
+        // Sign out
+        hp.SignOut();
+
+        return RedirectToAction("Index", "Home");
+    }
+
+    // GET: Account/AccessDenied
+    public IActionResult AccessDenied(string? returnURL)
+    {
+        return View();
+    }
+
+
+
+    // ------------------------------------------------------------------------
+    // Others
+    // ------------------------------------------------------------------------
+
+    // GET: Account/CheckEmail
+    public bool CheckEmail(string email)
+    {
+        return !db.Users.Any(u => u.Email == email);
+    }
+
+    // GET: Account/Register
     public IActionResult Register()
     {
         return View();
     }
 
+    // POST: Account/Register
     [HttpPost]
-    public IActionResult Register(string username, string password, string role)
+    public IActionResult Register(RegisterVM vm)
     {
-        // Simple registration logic
-        var existingUser = db.Users.FirstOrDefault(u => u.Username == username);
-        if (existingUser != null)
+        if (ModelState.IsValid("Email") &&
+            db.Users.Any(u => u.Email == vm.Email))
         {
-            ViewBag.Error = "Username already exists!";
-            return View();
+            ModelState.AddModelError("Email", "Duplicated Email.");
         }
 
-        var newUser = new User
+        if (ModelState.IsValid("Photo"))
         {
-            Username = username,
-            Password = password, // No need to have any constraint or?
-            Role = "Customer"
+            var err = hp.ValidatePhoto(vm.Photo);
+            if (err != "") ModelState.AddModelError("Photo", err);
+        }
+        
+        if (ModelState.IsValid)
+        {
+            // Insert member
+            db.Members.Add(new()
+            {
+                Email = vm.Email,
+                Hash = hp.HashPassword(vm.Password),
+                Name = vm.Name,
+                PhotoURL = hp.SavePhoto(vm.Photo, "photos"),
+            });
+            db.SaveChanges();
+
+            TempData["Info"] = "Register successfully. Please login.";
+            return RedirectToAction("Login");
+        }
+
+        return View(vm);
+    }
+
+    // GET: Account/UpdatePassword
+    [Authorize]
+    public IActionResult UpdatePassword()
+    {
+        return View();
+    }
+
+    // POST: Account/UpdatePassword
+    [Authorize]
+    [HttpPost]
+    public IActionResult UpdatePassword(UpdatePasswordVM vm)
+    {
+        // Get user (admin or member) record based on email (PK)
+        var u = db.Users.Find(User.Identity!.Name);
+        if (u == null) return RedirectToAction("Index", "Home");
+
+        // If current password not matched
+        if (!hp.VerifyPassword(u.Hash, vm.Current))
+        {
+            ModelState.AddModelError("Current", "Current Password not matched.");
+        }
+
+        if (ModelState.IsValid)
+        {
+            // Update user password (hash)
+            u.Hash = hp.HashPassword(vm.New);
+            db.SaveChanges();
+
+            TempData["Info"] = "Password updated.";
+            return RedirectToAction();
+        }
+
+        return View();
+    }
+
+    // GET: Account/UpdateProfile
+    [Authorize(Roles = "Member")]
+    public IActionResult UpdateProfile()
+    {
+        // Get member record based on email (PK)
+        var m = db.Members.Find(User.Identity!.Name);
+        if (m == null) return RedirectToAction("Index", "Home");
+
+        var vm = new UpdateProfileVM
+        {
+            Email = m.Email,
+            Name =  m.Name,
+            PhotoURL = m.PhotoURL,
         };
 
-        db.Users.Add(newUser);
-        db.SaveChanges();
-
-        ViewBag.Message = "Registration successful!";
-        return RedirectToAction("Login");
+        return View(vm);
     }
-    public IActionResult Logout()
-    {
-        // TODO: Clear session/authentication here later, idk how to right now xd.
-        ViewBag.Message = "You have been logged out (placeholder).";
 
-        return RedirectToAction("Index", "Home");
+    // POST: Account/UpdateProfile
+    [Authorize(Roles = "Member")]
+    [HttpPost]
+    public IActionResult UpdateProfile(UpdateProfileVM vm)
+    {
+        // Get member record based on email (PK)
+        var m = db.Members.Find(User.Identity!.Name);
+        if (m == null) return RedirectToAction("Index", "Home");
+
+        if (vm.Photo != null)
+        {
+            var err = hp.ValidatePhoto(vm.Photo);
+            if (err != "") ModelState.AddModelError("Photo", err);
+        }
+
+        if (ModelState.IsValid)
+        {
+            m.Name = vm.Name;
+
+            if (vm.Photo != null)
+            {
+                hp.DeletePhoto(m.PhotoURL, "photos");
+                m.PhotoURL = hp.SavePhoto(vm.Photo, "photos");
+            }
+
+            db.SaveChanges();
+
+            TempData["Info"] = "Profile updated.";
+            return RedirectToAction();
+        }
+
+        vm.Email = m.Email;
+        vm.PhotoURL = m.PhotoURL;
+        return View(vm);
+    }
+
+    // GET: Account/ResetPassword
+    public IActionResult ResetPassword()
+    {
+        return View();
+    }
+
+    // POST: Account/ResetPassword
+    [HttpPost]
+    public IActionResult ResetPassword(ResetPasswordVM vm)
+    {
+        var u = db.Users.Find(vm.Email);
+
+        if (u == null)
+        {
+            ModelState.AddModelError("Email", "Email not found.");
+        }
+
+        if (ModelState.IsValid)
+        {
+            // Generate random password
+            string password = hp.RandomPassword();
+
+            // Update user (admin or member) record
+            u!.Hash = hp.HashPassword(password);
+            db.SaveChanges();
+
+            // Send reset password email
+
+            TempData["Info"] = $"Password reset to <b>{password}</b>.";
+            return RedirectToAction();
+        }
+
+        return View();
     }
 }
