@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Main.Models;
 
 namespace Main.Controllers;
 
@@ -16,31 +19,30 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult Login(LoginVM vm, string? returnURL)
     {
-        // (1) Get user (admin or member) record based on email (PK)
-        var u = db.Users.Find(vm.Email);
+        if (!ModelState.IsValid) return View(vm);
 
-        // (2) Custom validation -> verify password
-        
-        if (u == null || !hp.VerifyPassword(u.Hash, vm.Password))
+        // (1) Get user by email (not by PK)
+        var u = db.Users.SingleOrDefault(x => x.Email == vm.Email);
+
+        // (2) Verify password using the mapped Password property
+        if (u == null || !hp.VerifyPassword(u.Password, vm.Password))
         {
-            ModelState.AddModelError("", "Login credentials not matched.");
+            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            return View(vm);
         }
 
-        if (ModelState.IsValid)
+        TempData["Info"] = "Login successfully.";
+
+        // (3) Sign in (Role is an enum -> ToString())
+        hp.SignIn(u.Email, u.Role.ToString(), vm.RememberMe);
+
+        // (4) Handle return URL safely
+        if (!string.IsNullOrEmpty(returnURL) && Url.IsLocalUrl(returnURL))
         {
-            TempData["Info"] = "Login successfully.";
-
-            // (3) Sign in
-            hp.SignIn(u!.Email, u.Role, vm.RememberMe);
-
-            // (4) Handle return URL
-            if (string.IsNullOrEmpty(returnURL))
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            return Redirect(returnURL);
         }
-        
-        return View(vm);
+
+        return RedirectToAction("Index", "Home");
     }
 
     // GET: Account/Logout
@@ -60,12 +62,6 @@ public class AccountController(DB db,
         return View();
     }
 
-
-
-    // ------------------------------------------------------------------------
-    // Others
-    // ------------------------------------------------------------------------
-
     // GET: Account/CheckEmail
     public bool CheckEmail(string email)
     {
@@ -82,27 +78,32 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult Register(RegisterVM vm)
     {
-        if (ModelState.IsValid("Email") &&
+        // Check email validity first, then duplication
+        if (ModelState.TryGetValue(nameof(vm.Email), out var _ms) &&
+            _ms.Errors.Count == 0 &&
             db.Users.Any(u => u.Email == vm.Email))
         {
-            ModelState.AddModelError("Email", "Duplicated Email.");
+            ModelState.AddModelError(nameof(vm.Email), "Duplicated Email.");
         }
 
-        if (ModelState.IsValid("Photo"))
+        // Validate photo if provided
+        if (vm.Image != null)
         {
-            var err = hp.ValidatePhoto(vm.Photo);
-            if (err != "") ModelState.AddModelError("Photo", err);
+            var err = hp.ValidatePhoto(vm.Image);
+            if (!string.IsNullOrEmpty(err)) ModelState.AddModelError(nameof(vm.Image), err);
         }
-        
+
         if (ModelState.IsValid)
         {
-            // Insert member
-            db.Members.Add(new()
+            // Insert user — set Id, persist hashed password into the mapped Password property, set Role
+            db.Users.Add(new()
             {
+                Id = Guid.NewGuid().ToString("n"),
                 Email = vm.Email,
-                Hash = hp.HashPassword(vm.Password),
-                Name = vm.Name,
-                PhotoURL = hp.SavePhoto(vm.Photo, "photos"),
+                Password = hp.HashPassword(vm.Password),
+                Username = vm.Name,
+                Image = vm.Image != null ? hp.SavePhoto(vm.Image, "photos") : null,
+                Role = UserRole.Member
             });
             db.SaveChanges();
 
@@ -125,42 +126,41 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult UpdatePassword(UpdatePasswordVM vm)
     {
-        // Get user (admin or member) record based on email (PK)
-        var u = db.Users.Find(User.Identity!.Name);
+        // find user by email (Name claim contains email)
+        var u = db.Users.SingleOrDefault(x => x.Email == User.Identity!.Name);
         if (u == null) return RedirectToAction("Index", "Home");
 
         // If current password not matched
-        if (!hp.VerifyPassword(u.Hash, vm.Current))
+        if (!hp.VerifyPassword(u.Password, vm.Current))
         {
-            ModelState.AddModelError("Current", "Current Password not matched.");
+            ModelState.AddModelError(nameof(vm.Current), "Current password is incorrect.");
         }
 
         if (ModelState.IsValid)
         {
-            // Update user password (hash)
-            u.Hash = hp.HashPassword(vm.New);
+            // Update persisted password property
+            u.Password = hp.HashPassword(vm.New);
             db.SaveChanges();
 
             TempData["Info"] = "Password updated.";
             return RedirectToAction();
         }
 
-        return View();
+        return View(vm);
     }
 
     // GET: Account/UpdateProfile
     [Authorize(Roles = "Member")]
     public IActionResult UpdateProfile()
     {
-        // Get member record based on email (PK)
-        var m = db.Members.Find(User.Identity!.Name);
+        var m = db.Users.SingleOrDefault(x => x.Email == User.Identity!.Name);
         if (m == null) return RedirectToAction("Index", "Home");
 
         var vm = new UpdateProfileVM
         {
             Email = m.Email,
-            Name =  m.Name,
-            PhotoURL = m.PhotoURL,
+            Name =  m.Username,
+            ImageURL = m.Image,
         };
 
         return View(vm);
@@ -171,24 +171,23 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult UpdateProfile(UpdateProfileVM vm)
     {
-        // Get member record based on email (PK)
-        var m = db.Members.Find(User.Identity!.Name);
+        var m = db.Users.SingleOrDefault(x => x.Email == User.Identity!.Name);
         if (m == null) return RedirectToAction("Index", "Home");
 
-        if (vm.Photo != null)
+        if (vm.Image != null)
         {
-            var err = hp.ValidatePhoto(vm.Photo);
-            if (err != "") ModelState.AddModelError("Photo", err);
+            var err = hp.ValidatePhoto(vm.Image);
+            if (!string.IsNullOrEmpty(err)) ModelState.AddModelError(nameof(vm.Image), err);
         }
 
         if (ModelState.IsValid)
         {
-            m.Name = vm.Name;
+            m.Username = vm.Name;
 
-            if (vm.Photo != null)
+            if (vm.Image != null)
             {
-                hp.DeletePhoto(m.PhotoURL, "photos");
-                m.PhotoURL = hp.SavePhoto(vm.Photo, "photos");
+                hp.DeletePhoto(m.Image, "photos");
+                m.Image = hp.SavePhoto(vm.Image, "photos");
             }
 
             db.SaveChanges();
@@ -198,7 +197,7 @@ public class AccountController(DB db,
         }
 
         vm.Email = m.Email;
-        vm.PhotoURL = m.PhotoURL;
+        vm.ImageURL = m.Image;
         return View(vm);
     }
 
@@ -212,11 +211,11 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult ResetPassword(ResetPasswordVM vm)
     {
-        var u = db.Users.Find(vm.Email);
+        var u = db.Users.SingleOrDefault(x => x.Email == vm.Email);
 
         if (u == null)
         {
-            ModelState.AddModelError("Email", "Email not found.");
+            ModelState.AddModelError(nameof(vm.Email), "Email not found.");
         }
 
         if (ModelState.IsValid)
@@ -224,16 +223,16 @@ public class AccountController(DB db,
             // Generate random password
             string password = hp.RandomPassword();
 
-            // Update user (admin or member) record
-            u!.Hash = hp.HashPassword(password);
+            // Update persisted password property
+            u!.Password = hp.HashPassword(password);
             db.SaveChanges();
 
-            // Send reset password email
+            // Send reset password email (TODO)
 
             TempData["Info"] = $"Password reset to <b>{password}</b>.";
             return RedirectToAction();
         }
 
-        return View();
+        return View(vm);
     }
 }
