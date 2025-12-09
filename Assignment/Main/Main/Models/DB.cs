@@ -10,6 +10,8 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
 {
     // DbSet
     public DbSet<User> Users { get; set; }
+    public DbSet<Admin> Admins { get; set; }
+    public DbSet<Member> Members { get; set; }
     public DbSet<Movie> Movies { get; set; }
     public DbSet<Showtime> Showtimes { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
@@ -23,8 +25,6 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
 
 public class User
 {
-    internal string Hash;
-
     [Key]
     public string Id { get; set; }
 
@@ -39,11 +39,20 @@ public class User
 
     [MaxLength(200)]
     public string Image { get; set; }
-
-    [Required, MaxLength(20)]
-    public string Role { get; set; }   // Admin || Customer
-
+    public string Role => GetType().Name;
     public List<Ticket> Tickets { get; set; } = new();
+}
+
+public class Admin : User
+{
+
+}
+
+
+public class Member : User
+{
+    [MaxLength(100)]
+    public string ImageURL { get; set; }
 }
 
 public class Movie

@@ -1,10 +1,44 @@
-﻿@{
+﻿@model RegisterVM
+
+@{
     ViewBag.Title = "Account | Register";
 }
 
-<form asp-controller="Account" asp-action="Register" method="post">
-    <input type="text" name="username" placeholder="Username" required />
-    <input type="password" name="password" placeholder="Password" required />
-    <button type="submit">Register</button>
+<form class="form" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <label asp-for="Email"></label>
+    <input asp-for="Email" autofocus>
+    <span asp-validation-for="Email"></span>
+
+    <label asp-for="Password"></label>
+    <input asp-for="Password">
+    <span asp-validation-for="Password"></span>
+
+    <label asp-for="Confirm"></label>
+    <input asp-for="Confirm">
+    <span asp-validation-for="Confirm"></span>
+
+    <label asp-for="Username"></label>
+    <input asp-for="Username">
+    <span asp-validation-for="Username"></span>
+
+    <label asp-for="Image"></label>
+    <label class="upload">
+        <small>Select Photo...</small>
+        <input asp-for="Image" accept="image/jpeg,image/png" hidden>
+        <img src="/images/photo.jpg">
+    </label>
+    <span asp-validation-for="Image"></span>
+
+    <section>
+        <button>Register</button>
+        <button type="reset">Reset</button>
+    </section>
 </form>
-<p>@ViewBag.Error</p>
+
+@section foot {
+    <script>
+        $.validator.setDefaults({ ignore: '' });
+    </script>
+}

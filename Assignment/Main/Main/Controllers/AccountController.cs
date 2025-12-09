@@ -21,7 +21,7 @@ public class AccountController(DB db,
 
         // (2) Custom validation -> verify password
         
-        if (u == null || !hp.VerifyPassword(u.Hash, vm.Password))
+        if (u == null || !hp.VerifyPassword(u.Password, vm.Password))
         {
             ModelState.AddModelError("", "Login credentials not matched.");
         }
@@ -90,19 +90,19 @@ public class AccountController(DB db,
 
         if (ModelState.IsValid("Photo"))
         {
-            var err = hp.ValidatePhoto(vm.Photo);
+            var err = hp.ValidatePhoto(vm.Image);
             if (err != "") ModelState.AddModelError("Photo", err);
         }
         
         if (ModelState.IsValid)
         {
             // Insert member
-            db.Members.Add(new()
+            db.Users.Add(new()
             {
                 Email = vm.Email,
-                Hash = hp.HashPassword(vm.Password),
-                Name = vm.Name,
-                PhotoURL = hp.SavePhoto(vm.Photo, "photos"),
+                Password = hp.HashPassword(vm.Password),
+                Username = vm.Username,
+                Image = hp.SavePhoto(vm.Image, "photos"),
             });
             db.SaveChanges();
 
@@ -130,7 +130,7 @@ public class AccountController(DB db,
         if (u == null) return RedirectToAction("Index", "Home");
 
         // If current password not matched
-        if (!hp.VerifyPassword(u.Hash, vm.Current))
+        if (!hp.VerifyPassword(u.Password, vm.Current))
         {
             ModelState.AddModelError("Current", "Current Password not matched.");
         }
@@ -138,7 +138,7 @@ public class AccountController(DB db,
         if (ModelState.IsValid)
         {
             // Update user password (hash)
-            u.Hash = hp.HashPassword(vm.New);
+            u.Password = hp.HashPassword(vm.New);
             db.SaveChanges();
 
             TempData["Info"] = "Password updated.";
@@ -153,14 +153,14 @@ public class AccountController(DB db,
     public IActionResult UpdateProfile()
     {
         // Get member record based on email (PK)
-        var m = db.Members.Find(User.Identity!.Name);
+        var m = db.Users.Find(User.Identity!.Name);
         if (m == null) return RedirectToAction("Index", "Home");
 
         var vm = new UpdateProfileVM
         {
             Email = m.Email,
-            Name =  m.Name,
-            PhotoURL = m.PhotoURL,
+            Username =  m.Username,
+            ImageURL = m.Image,
         };
 
         return View(vm);
@@ -172,23 +172,23 @@ public class AccountController(DB db,
     public IActionResult UpdateProfile(UpdateProfileVM vm)
     {
         // Get member record based on email (PK)
-        var m = db.Members.Find(User.Identity!.Name);
+        var m = db.Users.Find(User.Identity!.Name);
         if (m == null) return RedirectToAction("Index", "Home");
 
-        if (vm.Photo != null)
+        if (vm.Image != null)
         {
-            var err = hp.ValidatePhoto(vm.Photo);
+            var err = hp.ValidatePhoto(vm.Image);
             if (err != "") ModelState.AddModelError("Photo", err);
         }
 
         if (ModelState.IsValid)
         {
-            m.Name = vm.Name;
+            m.Username = vm.Username;
 
-            if (vm.Photo != null)
+            if (vm.Image != null)
             {
-                hp.DeletePhoto(m.PhotoURL, "photos");
-                m.PhotoURL = hp.SavePhoto(vm.Photo, "photos");
+                hp.DeletePhoto(m.Image, "photos");
+                m.Image = hp.SavePhoto(vm.Image, "photos");
             }
 
             db.SaveChanges();
@@ -198,7 +198,7 @@ public class AccountController(DB db,
         }
 
         vm.Email = m.Email;
-        vm.PhotoURL = m.PhotoURL;
+        vm.ImageURL = m.Image;
         return View(vm);
     }
 
@@ -225,7 +225,7 @@ public class AccountController(DB db,
             string password = hp.RandomPassword();
 
             // Update user (admin or member) record
-            u!.Hash = hp.HashPassword(password);
+            u!.Password = hp.HashPassword(password);
             db.SaveChanges();
 
             // Send reset password email

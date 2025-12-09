@@ -39,9 +39,9 @@ public class RegisterVM
     public string Confirm { get; set; }
 
     [StringLength(100)]
-    public string Name { get; set; }
+    public string Username { get; set; }
 
-    public IFormFile Photo { get; set; }
+    public IFormFile Image { get; set; }
 }
 
 public class UpdatePasswordVM
@@ -68,11 +68,11 @@ public class UpdateProfileVM
     public string? Email { get; set; }
 
     [StringLength(100)]
-    public string Name { get; set; }
+    public string Username { get; set; }
 
-    public string? PhotoURL { get; set; }
+    public string? ImageURL { get; set; }
 
-    public IFormFile? Photo { get; set; }
+    public IFormFile? Image { get; set; }
 }
 
 public class ResetPasswordVM

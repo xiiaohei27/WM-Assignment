@@ -89,7 +89,6 @@ public class Helper(IWebHostEnvironment en,
 
         ClaimsIdentity identity = new(claims, "Cookies");
 
-        // TODO
         ClaimsPrincipal principal = new(identity);
 
         // (2) Remember me (authentication properties)
