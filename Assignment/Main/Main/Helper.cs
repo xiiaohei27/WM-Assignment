@@ -8,18 +8,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Main;
 
-public class Helper
+public class Helper(IWebHostEnvironment en,
+                    IHttpContextAccessor ct)
 {
-    private readonly IWebHostEnvironment en;
-    private readonly IHttpContextAccessor ct;
-    private readonly PasswordHasher<object> ph = new();
-
-    public Helper(IWebHostEnvironment en, IHttpContextAccessor ct)
-    {
-        this.en = en;
-        this.ct = ct;
-    }
-
     // ------------------------------------------------------------------------
     // Photo Upload
     // ------------------------------------------------------------------------
@@ -38,7 +29,7 @@ public class Helper
             return "Photo size cannot more than 1MB.";
         }
 
-        return string.Empty;
+        return "";
     }
 
     public string SavePhoto(IFormFile f, string folder)
@@ -48,7 +39,7 @@ public class Helper
 
         var options = new ResizeOptions
         {
-            Size = new Size(200, 200),
+            Size = new(200, 200),
             Mode = ResizeMode.Crop,
         };
 
@@ -68,32 +59,38 @@ public class Helper
     }
 
 
+
     // ------------------------------------------------------------------------
     // Security Helper Functions
     // ------------------------------------------------------------------------
 
+
+    private readonly PasswordHasher<object> ph = new();
+
     public string HashPassword(string password)
     {
-        return ph.HashPassword(null, password);
+        return ph.HashPassword(0, password);
     }
 
     public bool VerifyPassword(string hash, string password)
     {
-        return ph.VerifyHashedPassword(null, hash, password)
+        return ph.VerifyHashedPassword(0, hash, password)
                == PasswordVerificationResult.Success;
     }
 
     public void SignIn(string email, string role, bool rememberMe)
     {
         // (1) Claim, identity and principal
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, email),
-            new Claim(ClaimTypes.Role, role),
-        };
+        List<Claim> claims =
+            [
+                new(ClaimTypes.Name, email),
+                new(ClaimTypes.Role, role),
+            ];
 
-        var identity = new ClaimsIdentity(claims, "Cookies");
-        var principal = new ClaimsPrincipal(identity);
+        ClaimsIdentity identity = new(claims, "Cookies");
+
+        // TODO
+        ClaimsPrincipal principal = new(identity);
 
         // (2) Remember me (authentication properties)
         AuthenticationProperties properties = new()
@@ -114,7 +111,7 @@ public class Helper
     public string RandomPassword()
     {
         string s = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        string password = string.Empty;
+        string password = "";
 
         Random r = new();
 

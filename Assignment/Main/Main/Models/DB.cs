@@ -41,16 +41,9 @@ public class User
     public string Image { get; set; }
 
     [Required, MaxLength(20)]
-    public UserRole Role { get; set; }   // Admin || Member
+    public string Role { get; set; }   // Admin || Customer
 
     public List<Ticket> Tickets { get; set; } = new();
-}
-
-// Role Enum
-public enum UserRole
-{
-    Admin,
-    Member
 }
 
 public class Movie

@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <CETCompat>false</CETCompat>
-    <LangVersion>13.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
