@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Sockets;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Main.Models;
 
@@ -10,8 +10,6 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
 {
     // DbSet
     public DbSet<User> Users { get; set; }
-    public DbSet<Admin> Admins { get; set; }
-    public DbSet<Member> Members { get; set; }
     public DbSet<Movie> Movies { get; set; }
     public DbSet<Showtime> Showtimes { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
@@ -19,6 +17,23 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
     public DbSet<Hall> Halls { get; set; }
     public DbSet<Seat> Seats { get; set; }
     public DbSet<EInvoice> EInvoices { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Configure TPH inheritance for User/Admin/Member
+        modelBuilder.Entity<User>()
+            .HasDiscriminator<string>("Discriminator")
+            .HasValue<User>("User")
+            .HasValue<Admin>("Admin")
+            .HasValue<Member>("Member");
+
+        // Make Email unique (but Id is still the primary key)
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+    }
 }
 
 // Entity Classes -------------------------------------------------------------
@@ -26,7 +41,7 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
 public class User
 {
     [Key]
-    public string Id { get; set; }
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     [Required, MaxLength(50)]
     public string Username { get; set; }
@@ -39,22 +54,26 @@ public class User
 
     [MaxLength(200)]
     public string Image { get; set; }
+
+    // Map to database column "Role" but make it computed
+    [MaxLength(20)]
+    [NotMapped]  // Don't store this - it's in the Discriminator column
     public string Role => GetType().Name;
+
     public List<Ticket> Tickets { get; set; } = new();
 }
 
 public class Admin : User
 {
-
+    // Admin has no additional properties
 }
-
 
 public class Member : User
 {
-    [MaxLength(100)]
-    public string ImageURL { get; set; }
+    // Member has no additional properties
 }
 
+// Keep all your other entity classes the same...
 public class Movie
 {
     [Key]
@@ -74,7 +93,7 @@ public class Movie
     [MaxLength(50)]
     public string SpokenLanguage { get; set; }
 
-    public int RunningTime { get; set; }   // in minutes?
+    public int RunningTime { get; set; }
 
     [MaxLength(100)]
     public string Director { get; set; }
@@ -130,7 +149,7 @@ public class Hall
     public string Name { get; set; }
 
     [MaxLength(50)]
-    public string HallType { get; set; }   // IMAX, 2D, 3D, etc.
+    public string HallType { get; set; }
 
     public int Capacity { get; set; }
 

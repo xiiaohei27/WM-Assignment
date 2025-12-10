@@ -32,7 +32,7 @@ public class AccountController(DB db,
         }
 
         // 3. Retrieve by primary key (Email)
-        var u = db.Users.Find(Email);
+        var u = db.Users.FirstOrDefault(u => u.Email == Email);
         if (u == null)
         {
             // 4. User not found
@@ -114,8 +114,9 @@ public class AccountController(DB db,
         if (ModelState.IsValid)
         {
             // Insert member
-            db.Users.Add(new()
+            db.Users.Add(new Member()  // or new Admin()
             {
+                Id = Guid.NewGuid().ToString(),
                 Email = vm.Email,
                 Password = hp.HashPassword(vm.Password),
                 Username = vm.Username,
