@@ -50,15 +50,11 @@
         @* Menu trimming *@
         @if (User.Identity != null && User.Identity.IsAuthenticated)
         {
-            <a href="/Home/Both">Both</a>
-        }
-        @if (User.IsInRole("Member"))
-        {
-            <a href="/Home/Member">Member</a>
+            <a href="/Views/Food">Food</a>
         }
         @if (User.IsInRole("Admin"))
         {
-            <a href="/Home/Admin">Admin</a>
+            <a href="/Views/Admin">Admin</a>
         }
 
         <div></div>
