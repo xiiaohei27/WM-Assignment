@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject DB DB
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -12,15 +13,71 @@
 </head>
 <body>
     <header>
-        <h1><a href="/">LOGO</a></h1>
+        <h1><a href="/">Movie Center</a></h1>
+
+        @* User email and role *@
+        @if (User.Identity!.IsAuthenticated)
+        {
+            <div>
+                @User.Identity.Name |
+                @(User.IsInRole("Admin") ? "Admin" : "")
+                @(User.IsInRole("Member") ? "Member" : "")
+            </div>
+        }
+
+        @* Member photo *@
+        @if (User.IsInRole("Member"))
+        {
+            var username = User.Identity?.Name;
+            string? photoURL = null;
+            if (!string.IsNullOrEmpty(username) && DB != null)
+            {
+                var user = DB.Users.Find(username);
+                photoURL = user?.Image;
+            }
+
+            if (!string.IsNullOrEmpty(photoURL))
+            {
+                <img src="/photos/@photoURL" alt="Member photo">
+            }
+        }
     </header>
 
     <nav>
         <a href="/">Index</a>
         <a asp-controller="Movie" asp-action="Index">Movies</a>
-        <a asp-controller="Account" asp-action="Login">Login</a>
-        <a asp-controller="Account" asp-action="Logout">Logout</a>
+
+        @* Menu trimming *@
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <a href="/Home/Both">Both</a>
+        }
+        @if (User.IsInRole("Member"))
+        {
+            <a href="/Home/Member">Member</a>
+        }
+        @if (User.IsInRole("Admin"))
+        {
+            <a href="/Home/Admin">Admin</a>
+        }
+
         <div></div>
+
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <a href="/Account/Logout">Logout</a>
+            <a href="/Account/UpdatePassword">Update Password</a>
+        }
+        else
+        {
+            <a href="/Account/Login">Login</a>
+            <a href="/Account/Register">Register</a>
+            <a href="/Account/ResetPassword">Reset Password</a>
+        }
+        @if (User.IsInRole("Member"))
+        {
+            <a href="/Account/UpdateProfile">Update Profile</a>
+        }
     </nav>
 
     <main>
@@ -29,7 +86,7 @@
     </main>
 
     <footer>
-        Developed by <b>BAE SUZY</b> &middot;
+        Developed by <b>Team RSD</b> &middot;
         Copyrighted &copy; @DateTime.Today.Year
     </footer>
 

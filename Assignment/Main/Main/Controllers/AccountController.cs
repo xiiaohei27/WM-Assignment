@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Main.Controllers;
 
@@ -16,31 +17,46 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult Login(LoginVM vm, string? returnURL)
     {
-        // (1) Get user (admin or member) record based on email (PK)
-        var u = db.Users.Find(vm.Email);
+        // 1. Validate incoming model
+        if (!ModelState.IsValid)
+        {
+            return View(vm);
+        }
 
-        // (2) Custom validation -> verify password
-        
-        if (u == null || !hp.VerifyPassword(u.Password, vm.Password))
+        // 2. Normalize and validate email
+        var Email = vm.Email?.Trim();
+        if (string.IsNullOrEmpty(Email))
+        {
+            ModelState.AddModelError("Email", "Email is required.");
+            return View(vm);
+        }
+
+        // 3. Retrieve by primary key (Email)
+        var u = db.Users.Find(Email);
+        if (u == null)
+        {
+            // 4. User not found
+            ModelState.AddModelError("", "Login credentials not matched.");
+            return View(vm);
+        }
+
+        // 5. Verify password
+        if (!hp.VerifyPassword(u.Password, vm.Password))
         {
             ModelState.AddModelError("", "Login credentials not matched.");
+            return View(vm);
         }
 
-        if (ModelState.IsValid)
+        // 6. Successful sign-in and redirect handling
+        TempData["Info"] = "Login successfully.";
+        hp.SignIn(u.Email, u.Role, vm.RememberMe);
+
+        if (!string.IsNullOrEmpty(returnURL) && Url.IsLocalUrl(returnURL))
         {
-            TempData["Info"] = "Login successfully.";
-
-            // (3) Sign in
-            hp.SignIn(u!.Email, u.Role, vm.RememberMe);
-
-            // (4) Handle return URL
-            if (string.IsNullOrEmpty(returnURL))
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            return LocalRedirect(returnURL);
         }
-        
-        return View(vm);
+
+        return RedirectToAction("Index", "Home");
     }
 
     // GET: Account/Logout
@@ -82,16 +98,17 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult Register(RegisterVM vm)
     {
-        if (ModelState.IsValid("Email") &&
+        // Replace IsValidField with GetFieldValidationState check
+        if (ModelState.GetFieldValidationState("Email") != ModelValidationState.Invalid &&  
             db.Users.Any(u => u.Email == vm.Email))
         {
             ModelState.AddModelError("Email", "Duplicated Email.");
         }
 
-        if (ModelState.IsValid("Photo"))
+        if (ModelState.GetFieldValidationState("Image") != ModelValidationState.Invalid)
         {
             var err = hp.ValidatePhoto(vm.Image);
-            if (err != "") ModelState.AddModelError("Photo", err);
+            if (err != "") ModelState.AddModelError("Image", err);
         }
         
         if (ModelState.IsValid)

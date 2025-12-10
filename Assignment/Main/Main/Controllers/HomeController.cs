@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Main.Controllers;
+
 
 public class HomeController(DB db) : Controller
 {
@@ -16,5 +18,26 @@ public class HomeController(DB db) : Controller
         // Send them to the view
         ViewBag.Featured = featured;
         return View(nowShowing); // pass the list of movies as the model
+    }
+
+    // GET: Home/Both
+    [Authorize]
+    public IActionResult Both()
+    {
+        return View();
+    }
+
+    // GET: Home/Member
+    [Authorize(Roles = "Member")]
+    public IActionResult Member()
+    {
+        return View();
+    }
+
+    // GET: Home/Admin
+    [Authorize(Roles = "Admin")]
+    public IActionResult Admin()
+    {
+        return View();
     }
 }
