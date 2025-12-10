@@ -10,6 +10,8 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
 {
     // DbSet
     public DbSet<User> Users { get; set; }
+    public DbSet<Admin> Admins { get; set; }
+    public DbSet<Member> Members { get; set; }
     public DbSet<Movie> Movies { get; set; }
     public DbSet<Showtime> Showtimes { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
@@ -25,11 +27,10 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
         // Configure TPH inheritance for User/Admin/Member
         modelBuilder.Entity<User>()
             .HasDiscriminator<string>("Discriminator")
-            .HasValue<User>("User")
             .HasValue<Admin>("Admin")
             .HasValue<Member>("Member");
 
-        // Make Email unique (but Id is still the primary key)
+        // Make Email unique
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
@@ -38,7 +39,7 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
 
 // Entity Classes -------------------------------------------------------------
 
-public class User
+public abstract class User  // Make this ABSTRACT
 {
     [Key]
     public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -55,9 +56,8 @@ public class User
     [MaxLength(200)]
     public string Image { get; set; }
 
-    // Map to database column "Role" but make it computed
-    [MaxLength(20)]
-    [NotMapped]  // Don't store this - it's in the Discriminator column
+    // Computed property - not stored in database
+    [NotMapped]
     public string Role => GetType().Name;
 
     public List<Ticket> Tickets { get; set; } = new();

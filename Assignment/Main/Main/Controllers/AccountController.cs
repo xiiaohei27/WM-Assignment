@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Main.Controllers;
 
-public class AccountController(DB db,
-                               Helper hp) : Controller
+public class AccountController(DB db, Helper hp) : Controller
 {
     // GET: Account/Login
     public IActionResult Login()
@@ -17,13 +16,11 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult Login(LoginVM vm, string? returnURL)
     {
-        // 1. Validate incoming model
         if (!ModelState.IsValid)
         {
             return View(vm);
         }
 
-        // 2. Normalize and validate email
         var Email = vm.Email?.Trim();
         if (string.IsNullOrEmpty(Email))
         {
@@ -31,25 +28,25 @@ public class AccountController(DB db,
             return View(vm);
         }
 
-        // 3. Retrieve by primary key (Email)
+        // FIX: Use FirstOrDefault to query by Email
         var u = db.Users.FirstOrDefault(u => u.Email == Email);
         if (u == null)
         {
-            // 4. User not found
             ModelState.AddModelError("", "Login credentials not matched.");
             return View(vm);
         }
 
-        // 5. Verify password
         if (!hp.VerifyPassword(u.Password, vm.Password))
         {
             ModelState.AddModelError("", "Login credentials not matched.");
             return View(vm);
         }
 
-        // 6. Successful sign-in and redirect handling
+        // FIX: Get the role from the discriminator (type name)
+        string role = u.GetType().Name; // Returns "Admin" or "Member"
+
         TempData["Info"] = "Login successfully.";
-        hp.SignIn(u.Email, u.Role, vm.RememberMe);
+        hp.SignIn(u.Email, role, vm.RememberMe);
 
         if (!string.IsNullOrEmpty(returnURL) && Url.IsLocalUrl(returnURL))
         {
@@ -63,10 +60,7 @@ public class AccountController(DB db,
     public IActionResult Logout(string? returnURL)
     {
         TempData["Info"] = "Logout successfully.";
-
-        // Sign out
         hp.SignOut();
-
         return RedirectToAction("Index", "Home");
     }
 
@@ -75,12 +69,6 @@ public class AccountController(DB db,
     {
         return View();
     }
-
-
-
-    // ------------------------------------------------------------------------
-    // Others
-    // ------------------------------------------------------------------------
 
     // GET: Account/CheckEmail
     public bool CheckEmail(string email)
@@ -98,8 +86,7 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult Register(RegisterVM vm)
     {
-        // Replace IsValidField with GetFieldValidationState check
-        if (ModelState.GetFieldValidationState("Email") != ModelValidationState.Invalid &&  
+        if (ModelState.GetFieldValidationState("Email") != ModelValidationState.Invalid &&
             db.Users.Any(u => u.Email == vm.Email))
         {
             ModelState.AddModelError("Email", "Duplicated Email.");
@@ -110,18 +97,20 @@ public class AccountController(DB db,
             var err = hp.ValidatePhoto(vm.Image);
             if (err != "") ModelState.AddModelError("Image", err);
         }
-        
+
         if (ModelState.IsValid)
         {
-            // Insert member
-            db.Users.Add(new Member()  // or new Admin()
+            // Create a new Member (not Admin)
+            var member = new Member()
             {
                 Id = Guid.NewGuid().ToString(),
                 Email = vm.Email,
                 Password = hp.HashPassword(vm.Password),
                 Username = vm.Username,
                 Image = hp.SavePhoto(vm.Image, "photos"),
-            });
+            };
+
+            db.Users.Add(member);
             db.SaveChanges();
 
             TempData["Info"] = "Register successfully. Please login.";
@@ -143,11 +132,10 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult UpdatePassword(UpdatePasswordVM vm)
     {
-        // Get user (admin or member) record based on email (PK)
-        var u = db.Users.Find(User.Identity!.Name);
+        // FIX: Find by Email (User.Identity.Name), not by Id
+        var u = db.Users.FirstOrDefault(u => u.Email == User.Identity!.Name);
         if (u == null) return RedirectToAction("Index", "Home");
 
-        // If current password not matched
         if (!hp.VerifyPassword(u.Password, vm.Current))
         {
             ModelState.AddModelError("Current", "Current Password not matched.");
@@ -155,7 +143,6 @@ public class AccountController(DB db,
 
         if (ModelState.IsValid)
         {
-            // Update user password (hash)
             u.Password = hp.HashPassword(vm.New);
             db.SaveChanges();
 
@@ -170,14 +157,14 @@ public class AccountController(DB db,
     [Authorize(Roles = "Member")]
     public IActionResult UpdateProfile()
     {
-        // Get member record based on email (PK)
-        var m = db.Users.Find(User.Identity!.Name);
+        // FIX: Find by Email
+        var m = db.Users.FirstOrDefault(u => u.Email == User.Identity!.Name);
         if (m == null) return RedirectToAction("Index", "Home");
 
         var vm = new UpdateProfileVM
         {
             Email = m.Email,
-            Username =  m.Username,
+            Username = m.Username,
             ImageURL = m.Image,
         };
 
@@ -189,8 +176,8 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult UpdateProfile(UpdateProfileVM vm)
     {
-        // Get member record based on email (PK)
-        var m = db.Users.Find(User.Identity!.Name);
+        // FIX: Find by Email
+        var m = db.Users.FirstOrDefault(u => u.Email == User.Identity!.Name);
         if (m == null) return RedirectToAction("Index", "Home");
 
         if (vm.Image != null)
@@ -230,7 +217,8 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult ResetPassword(ResetPasswordVM vm)
     {
-        var u = db.Users.Find(vm.Email);
+        // FIX: Find by Email, not by Id
+        var u = db.Users.FirstOrDefault(u => u.Email == vm.Email);
 
         if (u == null)
         {
@@ -239,14 +227,9 @@ public class AccountController(DB db,
 
         if (ModelState.IsValid)
         {
-            // Generate random password
             string password = hp.RandomPassword();
-
-            // Update user (admin or member) record
             u!.Password = hp.HashPassword(password);
             db.SaveChanges();
-
-            // Send reset password email
 
             TempData["Info"] = $"Password reset to <b>{password}</b>.";
             return RedirectToAction();
