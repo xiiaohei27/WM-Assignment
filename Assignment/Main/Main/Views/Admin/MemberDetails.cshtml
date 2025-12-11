@@ -1,4 +1,115 @@
-﻿@page
-@model Main.Views.Admin.MemberDetailsModel
+﻿@model Member
 @{
+    ViewBag.Title = "Member Details";
 }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Member Details</h2>
+        <div>
+            <a asp-action="EditMember" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+            <a asp-action="Members" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="/photos/@Model.Image" alt="@Model.Username"
+                         class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    <h4>@Model.Username</h4>
+                    <p class="text-muted">@Model.Email</p>
+                    @if (Model.IsEmailVerified)
+                    {
+                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> Email Verified</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning"><i class="bi bi-exclamation-circle"></i> Not Verified</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Member ID:</strong></div>
+                        <div class="col-sm-8">@Model.Id</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Username:</strong></div>
+                        <div class="col-sm-8">@Model.Username</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Email:</strong></div>
+                        <div class="col-sm-8">@Model.Email</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Email Status:</strong></div>
+                        <div class="col-sm-8">
+                            @if (Model.IsEmailVerified)
+                            {
+                                <span class="badge bg-success">Verified</span>
+                                @if (Model.EmailVerifiedAt.HasValue)
+                                {
+                                    <br>
+                            
+                                    <small class="text-muted">Verified on @Model.EmailVerifiedAt.Value.ToString("MMM dd, yyyy")</small>
+                                }
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Not Verified</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Booking History</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Tickets.Any())
+                    {
+                        <p class="text-muted">No bookings yet.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Movie</th>
+                                        <th>Showtime</th>
+                                        <th>Seat</th>
+                                        <th>Booking Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ticket in Model.Tickets.OrderByDescending(t => t.BookingDateTime))
+                                    {
+                                        <tr>
+                                            <td>@ticket.Showtime?.Movie?.Title</td>
+                                            <td>@ticket.Showtime?.StartDateTime.ToString("MMM dd, yyyy hh:mm tt")</td>
+                                            <td>@ticket.Seat?.SeatNumber</td>
+                                            <td>@ticket.BookingDateTime.ToString("MMM dd, yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted small mt-2">Total Bookings: @Model.Tickets.Count</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

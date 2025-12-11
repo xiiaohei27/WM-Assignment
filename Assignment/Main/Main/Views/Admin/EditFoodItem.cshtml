@@ -1,4 +1,96 @@
-﻿@page
-@model Main.Views.Admin.EditFoodItemModel
+﻿@model FoodItemVM
 @{
+    ViewBag.Title = "Edit Food Item";
+    var categories = ViewBag.Categories as List<FoodCategory>;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Edit Food Item</h2>
+        <a asp-action="FoodItems" class="btn btn-secondary">Back to List</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" autofocus>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Price" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">RM</span>
+                                    <input asp-for="Price" class="form-control" step="0.01">
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CategoryId" class="form-label"></label>
+                                <select asp-for="CategoryId" class="form-select">
+                                    @foreach (var category in categories)
+                                    {
+                                        <option value="@category.Id">@category.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsAvailable" class="form-check-input" type="checkbox">
+                                <label asp-for="IsAvailable" class="form-check-label"></label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Image" class="form-label">Food Image</label>
+
+                            @if (!string.IsNullOrEmpty(Model.ImageURL))
+                            {
+                                <div class="mb-2">
+                                    <img src="/images/food/@Model.ImageURL" alt="Current image"
+                                         class="rounded" style="max-width: 200px;">
+                                    <p class="text-muted small">Current Image</p>
+                                </div>
+                            }
+
+                            <input asp-for="Image" class="form-control" accept="image/jpeg,image/png">
+                            <span asp-validation-for="Image" class="text-danger"></span>
+                            <small class="text-muted">Leave empty to keep current image</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Update Food Item
+                            </button>
+                            <a asp-action="FoodItems" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section foot {
+    <script>
+        $.validator.setDefaults({ ignore: '' });
+    </script>
 }

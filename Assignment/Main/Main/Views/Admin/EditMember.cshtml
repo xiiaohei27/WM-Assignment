@@ -1,4 +1,74 @@
-﻿@page
-@model Main.Views.Admin.EditMemberModel
+﻿@model EditMemberVM
 @{
+    ViewBag.Title = "Edit Member";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Edit Member</h2>
+        <a asp-action="Members" class="btn btn-secondary">Back to List</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label"></label>
+                            <input asp-for="Username" class="form-control" autofocus>
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control">
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsEmailVerified" class="form-check-input" type="checkbox">
+                                <label asp-for="IsEmailVerified" class="form-check-label"></label>
+                            </div>
+                            <small class="text-muted">Check this to manually verify the member's email</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Image" class="form-label">Profile Photo</label>
+
+                            @if (!string.IsNullOrEmpty(Model.ImageURL))
+                            {
+                                <div class="mb-2">
+                                    <img src="/photos/@Model.ImageURL" alt="Current photo"
+                                         class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                    <p class="text-muted small">Current Photo</p>
+                                </div>
+                            }
+
+                            <input asp-for="Image" class="form-control" accept="image/jpeg,image/png">
+                            <span asp-validation-for="Image" class="text-danger"></span>
+                            <small class="text-muted">Leave empty to keep current photo</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Update Member
+                            </button>
+                            <a asp-action="Members" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section foot {
+    <script>
+        $.validator.setDefaults({ ignore: '' });
+    </script>
 }

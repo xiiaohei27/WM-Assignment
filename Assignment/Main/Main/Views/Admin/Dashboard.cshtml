@@ -3,71 +3,182 @@
 }
 
 <div class="container mt-4">
-    <h2>Admin Dashboard</h2>
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Admin Dashboard</h2>
+            <p class="text-muted">Manage your cinema system</p>
+        </div>
+    </div>
 
-    <div class="row mt-4">
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
+            <div class="card text-white bg-primary h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Total Members</h5>
-                    <h2>@ViewBag.TotalMembers</h2>
-                    <a asp-action="Members" class="btn btn-light btn-sm mt-2">Manage Members</a>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Total Members</h5>
+                        <i class="bi bi-people" style="font-size: 2rem;"></i>
+                    </div>
+                    <h2 class="mb-3">@ViewBag.TotalMembers</h2>
+                    <a asp-action="Members" class="btn btn-light btn-sm">
+                        <i class="bi bi-arrow-right"></i> Manage Members
+                    </a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card bg-success text-white">
+            <div class="card text-white bg-success h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Food Items</h5>
-                    <h2>@ViewBag.TotalFoodItems</h2>
-                    <a asp-action="FoodItems" class="btn btn-light btn-sm mt-2">Manage Items</a>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Food Items</h5>
+                        <i class="bi bi-basket" style="font-size: 2rem;"></i>
+                    </div>
+                    <h2 class="mb-3">@ViewBag.TotalFoodItems</h2>
+                    <a asp-action="FoodItems" class="btn btn-light btn-sm">
+                        <i class="bi bi-arrow-right"></i> Manage Items
+                    </a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card bg-info text-white">
+            <div class="card text-white bg-info h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Categories</h5>
-                    <h2>@ViewBag.TotalCategories</h2>
-                    <a asp-action="FoodCategories" class="btn btn-light btn-sm mt-2">Manage Categories</a>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Categories</h5>
+                        <i class="bi bi-tag" style="font-size: 2rem;"></i>
+                    </div>
+                    <h2 class="mb-3">@ViewBag.TotalCategories</h2>
+                    <a asp-action="FoodCategories" class="btn btn-light btn-sm">
+                        <i class="bi bi-arrow-right"></i> Manage Categories
+                    </a>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card bg-warning text-white">
+            <div class="card text-white bg-warning h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Today's Orders</h5>
-                    <h2>@ViewBag.TodayOrders</h2>
-                    <small>Total: @ViewBag.TotalOrders</small>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Today's Orders</h5>
+                        <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                    </div>
+                    <h2 class="mb-3">@ViewBag.TodayOrders</h2>
+                    <small class="d-block">Total Orders: @ViewBag.TotalOrders</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
+    <!-- Management Sections -->
+    <div class="row g-4">
+        <!-- Member Management -->
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Quick Links</h5>
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people-fill"></i> Member Management
+                    </h5>
                 </div>
-                <div class="list-group list-group-flush">
-                    <a asp-action="Members" class="list-group-item list-group-item-action">
-                        <i class="bi bi-people"></i> Manage Members
-                    </a>
-                    <a asp-action="FoodCategories" class="list-group-item list-group-item-action">
-                        <i class="bi bi-tag"></i> Manage Food Categories
-                    </a>
-                    <a asp-action="FoodItems" class="list-group-item list-group-item-action">
-                        <i class="bi bi-basket"></i> Manage Food Items
-                    </a>
-                    <a asp-action="CreateFoodItem" class="list-group-item list-group-item-action">
-                        <i class="bi bi-plus-circle"></i> Add New Food Item
-                    </a>
+                <div class="card-body">
+                    <p class="text-muted">Manage registered members and their accounts</p>
+                    <div class="d-grid gap-2">
+                        <a asp-action="Members" class="btn btn-outline-primary">
+                            <i class="bi bi-list-ul"></i> View All Members
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Food & Beverage Management -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shop"></i> Food & Beverage
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Manage food categories and menu items</p>
+                    <div class="d-grid gap-2">
+                        <a asp-action="FoodCategories" class="btn btn-outline-success">
+                            <i class="bi bi-tag-fill"></i> Manage Categories
+                        </a>
+                        <a asp-action="FoodItems" class="btn btn-outline-success">
+                            <i class="bi bi-basket-fill"></i> Manage Food Items
+                        </a>
+                        <a asp-action="CreateFoodItem" class="btn btn-success">
+                            <i class="bi bi-plus-circle-fill"></i> Add New Food Item
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-fill"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a asp-action="CreateCategory" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-plus"></i> Add Category
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-action="CreateFoodItem" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-plus"></i> Add Food Item
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-action="Members" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-search"></i> Search Members
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-house"></i> Back to Home
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+    .bg-primary {
+        background-color: #0d6efd !important;
+    }
+
+    .bg-success {
+        background-color: #198754 !important;
+    }
+
+    .bg-info {
+        background-color: #0dcaf0 !important;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+    }
+</style>

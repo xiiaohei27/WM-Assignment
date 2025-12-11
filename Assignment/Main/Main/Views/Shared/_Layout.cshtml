@@ -68,9 +68,15 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <div class="navbar-nav me-auto">
-                <a class="nav-link" href="/">Index</a>
-                <a class="nav-link" asp-controller="Movie" asp-action="Index">Movies</a>
-                <a class="nav-link" asp-controller="Food" asp-action="Index">Food & Beverage</a>
+                <a class="nav-link" href="/">
+                    <i class="bi bi-house"></i> Home
+                </a>
+                <a class="nav-link" asp-controller="Movie" asp-action="Index">
+                    <i class="bi bi-film"></i> Movies
+                </a>
+                <a class="nav-link" asp-controller="Food" asp-action="Index">
+                    <i class="bi bi-cup-straw"></i> Food & Beverage
+                </a>
 
                 @* Cart Icon with Badge *@
                 @{
@@ -87,31 +93,20 @@
                     }
                 </a>
 
-                @* Admin Dropdown Menu *@
+                @* Simple Admin Button - Goes directly to Dashboard *@
                 @if (User.IsInRole("Admin"))
                 {
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Admin
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">Dashboard</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Member Management</h6></li>
-                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="Members">Manage Members</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Food & Beverage</h6></li>
-                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="FoodCategories">Manage Categories</a></li>
-                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="FoodItems">Manage Food Items</a></li>
-                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreateFoodItem">Add Food Item</a></li>
-                        </ul>
-                    </li>
+                    <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">
+                        <i class="bi bi-speedometer2"></i> Admin
+                    </a>
                 }
 
                 @* Member Menu *@
                 @if (User.IsInRole("Member"))
                 {
-                    <a class="nav-link" asp-controller="Account" asp-action="UpdateProfile">Profile</a>
+                    <a class="nav-link" asp-controller="Account" asp-action="UpdateProfile">
+                        <i class="bi bi-person-circle"></i> Profile
+                    </a>
                 }
             </div>
 
@@ -119,14 +114,24 @@
             <div class="navbar-nav ms-auto">
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
-                    <a class="nav-link" href="/Account/Logout">Logout</a>
-                    <a class="nav-link" href="/Account/UpdatePassword">Change Password</a>
+                    <a class="nav-link" href="/Account/UpdatePassword">
+                        <i class="bi bi-key"></i> Change Password
+                    </a>
+                    <a class="nav-link" href="/Account/Logout">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
                 }
                 else
                 {
-                    <a class="nav-link" href="/Account/Login">Login</a>
-                    <a class="nav-link" href="/Account/Register">Register</a>
-                    <a class="nav-link" href="/Account/ForgotPassword">Forgot Password</a>
+                    <a class="nav-link" href="/Account/Login">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                    <a class="nav-link" href="/Account/Register">
+                        <i class="bi bi-person-plus"></i> Register
+                    </a>
+                    <a class="nav-link" href="/Account/ForgotPassword">
+                        <i class="bi bi-question-circle"></i> Forgot Password
+                    </a>
                 }
             </div>
         </div>
@@ -148,11 +153,13 @@
         /* Navigation styling */
         .navbar {
             margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .navbar-nav .nav-link {
             color: rgba(255, 255, 255, 0.85) !important;
             padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
         }
 
             .navbar-nav .nav-link:hover {
@@ -161,33 +168,27 @@
                 border-radius: 4px;
             }
 
-        /* Dropdown styling */
-        .dropdown-menu {
-            background-color: #343a40;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .dropdown-item {
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-            .dropdown-item:hover {
-                background-color: rgba(255, 255, 255, 0.1);
-                color: #fff;
+            .navbar-nav .nav-link i {
+                margin-right: 5px;
             }
-
-        .dropdown-header {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.875rem;
-        }
-
-        .dropdown-divider {
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-        }
 
         /* Cart badge positioning fix */
         .nav-link.position-relative {
             padding-right: 2rem !important;
+        }
+
+        /* Main content styling */
+        main {
+            min-height: calc(100vh - 250px);
+            padding: 20px 0;
+        }
+
+        /* Footer styling */
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
         }
     </style>
 
