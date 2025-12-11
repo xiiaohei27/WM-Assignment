@@ -1,6 +1,11 @@
 ﻿@model IEnumerable<Cinema>
 @{
     var movie = ViewBag.Movie as Movie;
+    if (movie == null)
+    {
+        <p>Movie not found</p>
+        return;
+    }
     ViewBag.Title = "Select Cinema for " + movie.Title;
 }
 
@@ -8,8 +13,8 @@
 {
     <div>
         <a asp-action="SelectDate" asp-controller="Showtime"
-            asp-route-movieId="@movie.Id"
-            asp-route-cinemaId="@cinema.Id">
+           asp-route-movieId="@movie.Id"
+           asp-route-cinemaId="@cinema.Id">
             @cinema.Name
         </a>
     </div>

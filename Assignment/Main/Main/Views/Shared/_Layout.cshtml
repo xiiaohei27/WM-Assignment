@@ -50,7 +50,7 @@
 
         @* Cart Icon with Badge *@
         @{
-            var cart = Context.Session.GetObject<List<CartItem>>("FoodCart");
+            var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
             var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
         }
         <a asp-controller="Food" asp-action="Cart" class="position-relative">
