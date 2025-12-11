@@ -62,8 +62,16 @@ public class AccountController(DB db, Helper hp, IEmailService emailService) : C
     // GET: Account/Logout
     public IActionResult Logout(string? returnURL)
     {
+        // Clear shopping cart on logout
+        HttpContext.Session.Remove("FoodCart");
+
+        // Clear any pending ticket data
+        HttpContext.Session.Remove("PendingTicketShowtimeId");
+        HttpContext.Session.Remove("PendingTicketSeatIds");
+
         TempData["Info"] = "Logout successfully.";
         hp.SignOut();
+
         return RedirectToAction("Index", "Home");
     }
 

@@ -37,9 +37,19 @@ public class SeatController(DB db) : Controller
     [HttpPost]
     public IActionResult SelectSeats(string showtimeId, List<string> selectedSeatIds)
     {
-        //TempData["ShowtimeId"] = showtimeId;
-        //TempData["SelectedSeatIds"] = selectedSeatIds;
+        if (selectedSeatIds == null || !selectedSeatIds.Any())
+        {
+            TempData["Error"] = "Please select at least one seat.";
+            return RedirectToAction("SelectSeats", new { showtimeId });
+        }
 
-        return RedirectToAction("Buy", "Ticket");
+        // Store pending ticket information in session
+        HttpContext.Session.SetString("PendingTicketShowtimeId", showtimeId);
+        HttpContext.Session.SetObject("PendingTicketSeatIds", selectedSeatIds);
+
+        TempData["Info"] = $"You've selected {selectedSeatIds.Count} seat(s). Please order food & beverages to complete your booking.";
+
+        // Redirect to food ordering
+        return RedirectToAction("Index", "Food");
     }
 }

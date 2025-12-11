@@ -1,0 +1,99 @@
+﻿@model FoodOrder
+@{
+    ViewBag.Title = "Order QR Code";
+    var isExpired = Model.ExpiresAt < DateTime.Now;
+    var timeRemaining = Model.ExpiresAt - DateTime.Now;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-@(Model.IsRedeemed ? "success" : isExpired ? "danger" : "primary")">
+                <div class="card-header bg-@(Model.IsRedeemed ? "success" : isExpired ? "danger" : "primary") text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-qr-code"></i> Order QR Code
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <h6>Order #@Model.RedemptionCode</h6>
+                    <p class="text-muted small">@Model.OrderDateTime.ToString("MMM dd, yyyy hh:mm tt")</p>
+
+                    @if (Model.IsRedeemed)
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>Already Redeemed</strong>
+                            <p class="mb-0">This order was redeemed on @Model.RedeemedAt?.ToString("MMM dd, yyyy hh:mm tt")</p>
+                        </div>
+                    }
+                    else if (isExpired)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>Expired</strong>
+                            <p class="mb-0">This order expired on @Model.ExpiresAt?.ToString("MMM dd, yyyy hh:mm tt")</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <img src="data:image/png;base64,@ViewBag.QRCodeBase64" alt="QR Code"
+                             class="img-fluid mb-3" style="max-width: 300px;">
+
+                        <div class="alert alert-info">
+                            <strong><i class="bi bi-info-circle"></i> Redemption Code:</strong>
+                            <h3 class="mb-0 font-monospace">@Model.RedemptionCode</h3>
+                        </div>
+
+                        @if (timeRemaining != null && timeRemaining.Value.TotalMinutes > 0)
+                        {
+                            <div class="alert alert-warning">
+                                <i class="bi bi-clock"></i>
+                                <strong>Valid for:</strong>
+                                @if (timeRemaining.Value.TotalHours >= 1)
+                                {
+                                    <span>@timeRemaining.Value.Hours hour(s) @timeRemaining.Value.Minutes minute(s)</span>
+                                }
+                                else
+                                {
+                                    <span>@timeRemaining.Value.Minutes minute(s)</span>
+                                }
+                            </div>
+                        }
+                    }
+
+                    <hr>
+
+                    <h6>Items:</h6>
+                    <ul class="list-unstyled">
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <li class="text-start">
+                                <strong>@item.FoodItem.Name</strong> × @item.Quantity
+                                <span class="float-end">RM @item.Subtotal.ToString("F2")</span>
+                            </li>
+                        }
+                    </ul>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="text-primary">RM @Model.TotalAmount.ToString("F2")</strong>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-action="MyOrders" class="btn btn-primary">Back to My Orders</a>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .font-monospace {
+        font-family: 'Courier New', monospace;
+        letter-spacing: 0.2em;
+    }
+</style>
