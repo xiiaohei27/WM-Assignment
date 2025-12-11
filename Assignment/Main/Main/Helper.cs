@@ -46,9 +46,9 @@ public class Helper(IWebHostEnvironment en,
         };
 
         using var stream = f.OpenReadStream();
-        using var img = SixLabors.ImageSharp.Image.Load(stream);
+        using var img = SixLabors.ImageSharp.Image.Load(stream); // Remove the configuration parameter
         img.Mutate(x => x.Resize(options));
-        img.Save(path);
+        img.SaveAsJpeg(path); // Use SaveAsJpeg instead of Save
 
         return file;
     }
