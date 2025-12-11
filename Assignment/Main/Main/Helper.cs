@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using static System.Net.Mime.MediaTypeNames;
@@ -9,7 +10,8 @@ using static System.Net.Mime.MediaTypeNames;
 namespace Main;
 
 public class Helper(IWebHostEnvironment en,
-                    IHttpContextAccessor ct)
+                    IHttpContextAccessor ct,
+                    IConfiguration cf)
 {
     // ------------------------------------------------------------------------
     // Photo Upload
@@ -121,4 +123,30 @@ public class Helper(IWebHostEnvironment en,
 
         return password;
     }
+
+    //// ------------------------------------------------------------------------
+    //// Email
+    //// ------------------------------------------------------------------------
+
+    //public void SendEmail(MailMessage mail)
+    //{
+    //    string user = cf["Smtp:User"]!;
+    //    string pass = cf["Smtp:Pass"]!;
+    //    string host = cf["Smtp:Host"]!;
+    //    string name = cf["Smtp:Name"]!;
+    //    int port = cf.GetValue<int>(cf["Smtp:Port"]!);
+
+    //    mail.From = new MailAddress(user, name);
+
+    //    using var smtp = new SmtpClient
+    //    {
+    //        Host = host,
+    //        Port = port,
+    //        EnableSsl = true,
+    //        Credentials = new System.Net.NetworkCredential(user, pass),
+    //    };
+
+    //    smtp.Send(mail);
+
+    //}
 }

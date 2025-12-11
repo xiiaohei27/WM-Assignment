@@ -99,7 +99,7 @@ public class AccountController(DB db,
     public IActionResult Register(RegisterVM vm)
     {
         // Replace IsValidField with GetFieldValidationState check
-        if (ModelState.GetFieldValidationState("Email") != ModelValidationState.Invalid &&  
+        if (ModelState.GetFieldValidationState("Email") != ModelValidationState.Invalid &&
             db.Users.Any(u => u.Email == vm.Email))
         {
             ModelState.AddModelError("Email", "Duplicated Email.");
@@ -110,7 +110,7 @@ public class AccountController(DB db,
             var err = hp.ValidatePhoto(vm.Image);
             if (err != "") ModelState.AddModelError("Image", err);
         }
-        
+
         if (ModelState.IsValid)
         {
             // Insert member
@@ -143,27 +143,76 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult UpdatePassword(UpdatePasswordVM vm)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(vm);
+        }
+
         // Get user (admin or member) record based on email (PK)
         var u = db.Users.Find(User.Identity!.Name);
-        if (u == null) return RedirectToAction("Index", "Home");
+        if (u == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Index", "Home");
+        }
 
         // If current password not matched
         if (!hp.VerifyPassword(u.Password, vm.Current))
         {
-            ModelState.AddModelError("Current", "Current Password not matched.");
+            ModelState.AddModelError("Current", "Current password is incorrect.");
+            return View(vm);
         }
 
-        if (ModelState.IsValid)
+        // Check if new password is same as current password
+        if (hp.VerifyPassword(u.Password, vm.New))
         {
-            // Update user password (hash)
-            u.Password = hp.HashPassword(vm.New);
-            db.SaveChanges();
-
-            TempData["Info"] = "Password updated.";
-            return RedirectToAction();
+            ModelState.AddModelError("New", "New password must be different from current password.");
+            return View(vm);
         }
 
+        // Update user password (hash)
+        u.Password = hp.HashPassword(vm.New);
+        db.SaveChanges();
+
+        TempData["Info"] = "Password updated successfully.";
+        return RedirectToAction();
+    }
+
+    // GET: Account/ResetPassword
+    public IActionResult ResetPassword()
+    {
         return View();
+    }
+
+    // POST: Account/ResetPassword
+    [HttpPost]
+    public IActionResult ResetPassword(ResetPasswordVM vm)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(vm);
+        }
+
+        var u = db.Users.FirstOrDefault(u => u.Email == vm.Email);
+
+        if (u == null)
+        {
+            ModelState.AddModelError("Email", "Email not found.");
+            return View(vm);
+        }
+
+        // Generate random password
+        string password = hp.RandomPassword();
+
+        // Update user (admin or member) record
+        u.Password = hp.HashPassword(password);
+        db.SaveChanges();
+
+        // TODO: Send reset password email in production
+        // For now, display the password (NOT RECOMMENDED IN PRODUCTION)
+        TempData["Info"] = $"Password has been reset. Your new password is: <b>{password}</b><br/>Please login and change your password immediately.";
+
+        return RedirectToAction("Login");
     }
 
     // GET: Account/UpdateProfile
@@ -177,7 +226,7 @@ public class AccountController(DB db,
         var vm = new UpdateProfileVM
         {
             Email = m.Email,
-            Username =  m.Username,
+            Username = m.Username,
             ImageURL = m.Image,
         };
 
@@ -220,38 +269,4 @@ public class AccountController(DB db,
         return View(vm);
     }
 
-    // GET: Account/ResetPassword
-    public IActionResult ResetPassword()
-    {
-        return View();
-    }
-
-    // POST: Account/ResetPassword
-    [HttpPost]
-    public IActionResult ResetPassword(ResetPasswordVM vm)
-    {
-        var u = db.Users.Find(vm.Email);
-
-        if (u == null)
-        {
-            ModelState.AddModelError("Email", "Email not found.");
-        }
-
-        if (ModelState.IsValid)
-        {
-            // Generate random password
-            string password = hp.RandomPassword();
-
-            // Update user (admin or member) record
-            u!.Password = hp.HashPassword(password);
-            db.SaveChanges();
-
-            // Send reset password email
-
-            TempData["Info"] = $"Password reset to <b>{password}</b>.";
-            return RedirectToAction();
-        }
-
-        return View();
-    }
 }

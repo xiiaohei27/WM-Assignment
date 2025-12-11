@@ -21,6 +21,8 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
     public DbSet<FoodItem> FoodItems { get; set; }
     public DbSet<FoodOrder> FoodOrders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+    public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,8 +65,14 @@ public class User
     [MaxLength(20)]
     [NotMapped]  // Don't store this - it's in the Discriminator column
     public string Role => GetType().Name;
-
     public List<Ticket> Tickets { get; set; } = new();
+    public bool IsEmailVerified { get; set; } = false;
+
+    public DateTime? EmailVerifiedAt { get; set; }
+
+    public List<PasswordResetToken> PasswordResetTokens { get; set; } = new();
+
+    public List<EmailVerificationToken> EmailVerificationTokens { get; set; } = new();
 }
 
 public class Admin : User
@@ -77,7 +85,48 @@ public class Member : User
     // Member has no additional properties
 }
 
-// Keep all your other entity classes the same...
+public class PasswordResetToken
+{
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    [Required]
+    public string UserId { get; set; }
+    public User User { get; set; }
+
+    [Required, MaxLength(100)]
+    public string Token { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public DateTime ExpiresAt { get; set; }
+
+    public bool IsUsed { get; set; } = false;
+
+    public DateTime? UsedAt { get; set; }
+}
+
+public class EmailVerificationToken
+{
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    [Required]
+    public string UserId { get; set; }
+    public User User { get; set; }
+
+    [Required, MaxLength(100)]
+    public string Token { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public DateTime ExpiresAt { get; set; }
+
+    public bool IsUsed { get; set; } = false;
+
+    public DateTime? UsedAt { get; set; }
+}
+
 public class Movie
 {
     [Key]

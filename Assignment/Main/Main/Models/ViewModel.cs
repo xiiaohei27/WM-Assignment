@@ -6,8 +6,6 @@ namespace Main.Models;
 
 #nullable disable warnings
 
-// View Models ----------------------------------------------------------------
-
 public class LoginVM
 {
     [StringLength(100)]
@@ -75,9 +73,22 @@ public class UpdateProfileVM
     public IFormFile? Image { get; set; }
 }
 
-public class ResetPasswordVM
+// NEW: Password Reset with Token
+public class ResetPasswordWithTokenVM
 {
-    [StringLength(100)]
-    [EmailAddress]
-    public string Email { get; set; }
+    [Required]
+    public string Token { get; set; }
+
+    [Required]
+    [StringLength(100, MinimumLength = 5)]
+    [DataType(DataType.Password)]
+    [DisplayName("New Password")]
+    public string NewPassword { get; set; }
+
+    [Required]
+    [StringLength(100, MinimumLength = 5)]
+    [Compare("NewPassword")]
+    [DataType(DataType.Password)]
+    [DisplayName("Confirm Password")]
+    public string ConfirmPassword { get; set; }
 }

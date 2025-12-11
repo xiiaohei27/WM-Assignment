@@ -10,6 +10,9 @@ builder.Services.AddSqlServer<DB>($@"
 ");
 builder.Services.AddScoped<Helper>();
 
+// Add Email Service
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 builder.Services.AddAuthentication().AddCookie();
 builder.Services.AddHttpContextAccessor();
 

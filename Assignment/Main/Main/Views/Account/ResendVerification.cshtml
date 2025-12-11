@@ -1,0 +1,37 @@
+﻿@{
+    ViewBag.Title = "Resend Verification";
+}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="bi bi-arrow-clockwise"></i> Resend Verification</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Enter your email to receive a new verification link.</p>
+
+                    <form method="post">
+                        <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email"
+                                   class="form-control"
+                                   id="email"
+                                   name="email"
+                                   placeholder="Enter your email"
+                                   required
+                                   autofocus>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-info text-white">Resend Verification Email</button>
+                            <a asp-action="Login" class="btn btn-outline-secondary">Back to Login</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
