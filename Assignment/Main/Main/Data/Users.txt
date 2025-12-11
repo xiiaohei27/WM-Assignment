@@ -1,2 +1,2 @@
-1	admin@gmail.com		admin123    Admin
-2	zw@gmail.com	    zhen123	    Member
+1	admin		admin123    Admin
+2	zhen	    zhen123	    Member
