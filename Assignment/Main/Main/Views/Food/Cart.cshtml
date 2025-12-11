@@ -1,4 +1,94 @@
-﻿@page
-@model Main.Views.Food.CartModel
+﻿@model List<CartItem>
 @{
+    ViewBag.Title = "Shopping Cart";
+    var total = Model.Sum(c => c.Price * c.Quantity);
 }
+
+<div class="container mt-4">
+    <h2>Your Cart</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Your cart is empty. <a asp-action="Index">Continue shopping</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        @foreach (var item in Model)
+                        {
+                            <div class="row mb-3 pb-3 border-bottom">
+                                <div class="col-md-2">
+                                    @if (!string.IsNullOrEmpty(item.Image))
+                                    {
+                                        <img src="/images/food/@item.Image" alt="@item.Name"
+                                             class="img-fluid rounded">
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <h5>@item.Name</h5>
+                                    <p class="text-muted">RM @item.Price.ToString("F2")</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <form method="post" asp-action="UpdateCart" class="d-flex align-items-center">
+                                        <input type="hidden" name="foodItemId" value="@item.FoodItemId" />
+                                        <input type="number" name="quantity" value="@item.Quantity"
+                                               min="1" max="10" class="form-control form-control-sm me-2"
+                                               style="width: 70px;" onchange="this.form.submit()">
+                                    </form>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong>RM @((item.Price * item.Quantity).ToString("F2"))</strong>
+                                </div>
+                                <div class="col-md-1">
+                                    <form method="post" asp-action="RemoveFromCart">
+                                        <input type="hidden" name="foodItemId" value="@item.FoodItemId" />
+                                        <button type="submit" class="btn btn-sm btn-danger">×</button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Order Summary</h5>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong>RM @total.ToString("F2")</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Tax (6%):</span>
+                            <strong>RM @((total * 0.06m).ToString("F2"))</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <h5>Total:</h5>
+                            <h5 class="text-primary">RM @((total * 1.06m).ToString("F2"))</h5>
+                        </div>
+
+                        <a asp-action="Checkout" class="btn btn-primary w-100 mb-2">
+                            Proceed to Checkout
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary w-100 mb-2">
+                            Continue Shopping
+                        </a>
+                        <form method="post" asp-action="ClearCart">
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                Clear Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

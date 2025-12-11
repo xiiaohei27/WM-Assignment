@@ -1,4 +1,81 @@
-﻿@page
-@model Main.Views.Food.CheckoutModel
+﻿@model List<CartItem>
 @{
+    ViewBag.Title = "Checkout";
+    var subtotal = Model.Sum(c => c.Price * c.Quantity);
+    var tax = subtotal * 0.06m;
+    var total = subtotal + tax;
 }
+
+<div class="container mt-4">
+    <h2>Checkout</h2>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Order Items</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>@item.Name × @item.Quantity</span>
+                            <strong>RM @((item.Price * item.Quantity).ToString("F2"))</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="PlaceOrder">
+                        <div class="mb-3">
+                            <label class="form-check">
+                                <input type="radio" name="paymentMethod" value="Cash" class="form-check-input" checked>
+                                <span class="form-check-label">Cash</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="radio" name="paymentMethod" value="Credit Card" class="form-check-input">
+                                <span class="form-check-label">Credit Card</span>
+                            </label>
+                            <label class="form-check">
+                                <input type="radio" name="paymentMethod" value="E-Wallet" class="form-check-input">
+                                <span class="form-check-label">E-Wallet (Touch 'n Go, GrabPay)</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            Place Order - RM @total.ToString("F2")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong>RM @subtotal.ToString("F2")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax (6%):</span>
+                        <strong>RM @tax.ToString("F2")</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <h5>Total:</h5>
+                        <h5 class="text-primary">RM @total.ToString("F2")</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
