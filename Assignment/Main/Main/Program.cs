@@ -13,9 +13,30 @@ builder.Services.AddScoped<Helper>();
 builder.Services.AddAuthentication().AddCookie();
 builder.Services.AddHttpContextAccessor();
 
+// Add Session support for shopping cart
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.MapDefaultControllerRoute();
-app.Run();
 
+// Add Session middleware
+app.UseSession();
+
+app.MapDefaultControllerRoute();
+
+// Seed food data
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DB>();
+    FoodDataSeeder.SeedFoodData(db);
+}
+
+app.Run();

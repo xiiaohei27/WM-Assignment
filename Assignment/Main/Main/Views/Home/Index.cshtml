@@ -25,3 +25,15 @@
         </div>
     }
 </div>
+
+@* Food & Beverage Section *@
+<div style="margin-top: 60px; padding: 30px 0; background-color: #f8f9fa;">
+    <h2>Food & Beverage</h2>
+    <p>Enhance your movie experience with our delicious snacks and beverages!</p>
+
+    @await Html.PartialAsync("~/Views/Food/_FeaturedMenu.cshtml")
+
+    <div class="text-center mt-4">
+        <a asp-controller="Food" asp-action="Index" class="btn btn-primary btn-lg">View Full Menu →</a>
+    </div>
+</div>

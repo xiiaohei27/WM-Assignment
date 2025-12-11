@@ -46,6 +46,22 @@
     <nav>
         <a href="/">Index</a>
         <a asp-controller="Movie" asp-action="Index">Movies</a>
+        <a asp-controller="Food" asp-action="Index">Food & Beverage</a>
+
+        @* Cart Icon with Badge *@
+        @{
+            var cart = Context.Session.GetObject<List<CartItem>>("FoodCart");
+            var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
+        }
+        <a asp-controller="Food" asp-action="Cart" class="position-relative">
+            Cart
+            @if (cartCount > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @cartCount
+                </span>
+            }
+        </a>
 
         @* Menu trimming *@
         @if (User.Identity != null && User.Identity.IsAuthenticated)

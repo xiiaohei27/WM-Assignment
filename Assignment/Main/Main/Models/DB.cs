@@ -17,6 +17,10 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
     public DbSet<Hall> Halls { get; set; }
     public DbSet<Seat> Seats { get; set; }
     public DbSet<EInvoice> EInvoices { get; set; }
+    public DbSet<FoodCategory> FoodCategories { get; set; }
+    public DbSet<FoodItem> FoodItems { get; set; }
+    public DbSet<FoodOrder> FoodOrders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -228,4 +232,87 @@ public class EInvoice
     public string PaymentStatus { get; set; }
 
     public List<Ticket> Tickets { get; set; } = new();
+}
+public class FoodCategory
+{
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    [Required, MaxLength(50)]
+    public string Name { get; set; }
+
+    [MaxLength(200)]
+    public string? Description { get; set; }
+
+    public List<FoodItem> FoodItems { get; set; } = new();
+}
+
+public class FoodItem
+{
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    [Required, MaxLength(100)]
+    public string Name { get; set; }
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Price { get; set; }
+
+    [MaxLength(200)]
+    public string? Image { get; set; }
+
+    public bool IsAvailable { get; set; } = true;
+
+    public string CategoryId { get; set; }
+    public FoodCategory Category { get; set; }
+
+    public List<OrderItem> OrderItems { get; set; } = new();
+}
+
+public class FoodOrder
+{
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    public string? UserId { get; set; }
+    public User? User { get; set; }
+
+    public DateTime OrderDateTime { get; set; } = DateTime.Now;
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TotalAmount { get; set; }
+
+    [MaxLength(20)]
+    public string Status { get; set; } = "Pending"; // Pending, Confirmed, Preparing, Ready, Completed, Cancelled
+
+    [MaxLength(50)]
+    public string? PaymentMethod { get; set; }
+
+    public string? TicketId { get; set; } // Optional: Link to movie ticket
+    public Ticket? Ticket { get; set; }
+
+    public List<OrderItem> OrderItems { get; set; } = new();
+}
+
+public class OrderItem
+{
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    public string FoodOrderId { get; set; }
+    public FoodOrder FoodOrder { get; set; }
+
+    public string FoodItemId { get; set; }
+    public FoodItem FoodItem { get; set; }
+
+    public int Quantity { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal UnitPrice { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Subtotal { get; set; }
 }
