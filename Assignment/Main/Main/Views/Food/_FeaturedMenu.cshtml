@@ -29,7 +29,12 @@
                 }
                 <div class="card-body">
                     <h5 class="card-title">@item.Name</h5>
-                    <p class="card-text text-muted small">@item.Description?.Substring(0, Math.Min(60, item.Description.Length ?? 0))...</p>
+                    @if (!string.IsNullOrEmpty(item.Description))
+                    {
+                        <p class="card-text text-muted small">
+                            @(item.Description.Length > 60 ? item.Description.Substring(0, 60) + "..." : item.Description)
+                        </p>
+                    }
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="h5 mb-0 text-primary">RM @item.Price.ToString("F2")</span>
                         <span class="badge bg-info">@item.Category.Name</span>
