@@ -92,3 +92,10 @@ public class ResetPasswordWithTokenVM
     [DisplayName("Confirm Password")]
     public string ConfirmPassword { get; set; }
 }
+public class ResetPasswordVM
+{
+    [Required]
+    [StringLength(100)]
+    [EmailAddress]
+    public string Email { get; set; }
+}
