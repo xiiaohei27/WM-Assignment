@@ -41,6 +41,28 @@
                 <img src="/photos/@photoURL" alt="Member photo">
             }
         }
+
+        @if (TempData["Info"] != null)
+        {
+            <div class="alert alert-info">
+                @Html.Raw(TempData["Info"])
+            </div>
+        }
+
+        @if (TempData["Warning"] != null)
+        {
+            <div class="alert alert-warning">
+                @Html.Raw(TempData["Warning"])
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                @Html.Raw(TempData["Error"])
+            </div>
+        }
+
     </header>
 
     <nav>
@@ -64,14 +86,6 @@
         </a>
 
         @* Menu trimming *@
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
-        {
-            <a href="/Home/Both">Both</a>
-        }
-        @if (User.IsInRole("Member"))
-        {
-            <a href="/Home/Member">Member</a>
-        }
         @if (User.IsInRole("Admin"))
         {
             <a href="/Home/Admin">Admin</a>
@@ -82,7 +96,7 @@
         @if (User.Identity != null && User.Identity.IsAuthenticated)
         {
             <a href="/Account/Logout">Logout</a>
-            <a href="/Account/UpdatePassword">Update Password</a>
+            <a href="/Account/UpdatePassword">Renew Password</a>
         }
         else
         {
@@ -90,10 +104,7 @@
             <a href="/Account/Register">Register</a>
             <a href="/Account/ResetPassword">Reset Password</a>
         }
-        @if (User.IsInRole("Member"))
-        {
-            <a href="/Account/UpdateProfile">Update Profile</a>
-        }
+
     </nav>
 
     <main>
@@ -111,6 +122,44 @@
     <script src="/js/jquery.validate.min.js"></script>
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="/js/app.js" asp-append-version="true"></script>
+    <style>
+        /* make sure we have a transition available */
+        .fade-alert {
+            transition: opacity 0.5s ease, max-height 0.5s ease;
+            opacity: 1;
+            max-height: 200px; /* adjust if needed */
+            overflow: hidden;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          try {
+            // pick up alerts rendered by TempData (any alert class)
+            const alerts = document.querySelectorAll('.fade-alert, .alert');
+            if (!alerts.length) return;
+
+            alerts.forEach(alert => {
+              // ensure transition exists
+              alert.style.transition = alert.style.transition || 'opacity 0.5s ease, max-height 0.5s ease';
+              // show (in case bootstrap uses .fade/.show behaviour)
+              alert.classList.add('show');
+
+              // wait 2.5s then fade and remove
+              setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.maxHeight = '0px';
+                // remove from DOM after transition
+                setTimeout(() => {
+                  if (alert.parentNode) alert.parentNode.removeChild(alert);
+                }, 500); // must match CSS transition duration
+              }, 2500);
+            });
+          } catch (e) {
+            console.error('Alert timeout error:', e);
+          }
+        });
+    </script>
     @RenderSection("foot", false)
 </body>
 </html>

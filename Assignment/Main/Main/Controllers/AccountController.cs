@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Main.Controllers;
 
-public class AccountController(DB db,
-                               Helper hp) : Controller
+public class AccountController(DB db, Helper hp, IEmailService emailService) : Controller
 {
     // GET: Account/Login
     public IActionResult Login()
@@ -17,13 +16,11 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult Login(LoginVM vm, string? returnURL)
     {
-        // 1. Validate incoming model
         if (!ModelState.IsValid)
         {
             return View(vm);
         }
 
-        // 2. Normalize and validate email
         var Email = vm.Email?.Trim();
         if (string.IsNullOrEmpty(Email))
         {
@@ -31,23 +28,26 @@ public class AccountController(DB db,
             return View(vm);
         }
 
-        // 3. Retrieve by primary key (Email)
         var u = db.Users.FirstOrDefault(u => u.Email == Email);
         if (u == null)
         {
-            // 4. User not found
             ModelState.AddModelError("", "Login credentials not matched.");
             return View(vm);
         }
 
-        // 5. Verify password
         if (!hp.VerifyPassword(u.Password, vm.Password))
         {
             ModelState.AddModelError("", "Login credentials not matched.");
             return View(vm);
         }
 
-        // 6. Successful sign-in and redirect handling
+        // Check if email is verified
+        if (!u.IsEmailVerified)
+        {
+            ViewBag.Email = u.Email;
+            return View("EmailNotVerified");
+        }
+
         TempData["Info"] = "Login successfully.";
         hp.SignIn(u.Email, u.Role, vm.RememberMe);
 
@@ -63,10 +63,7 @@ public class AccountController(DB db,
     public IActionResult Logout(string? returnURL)
     {
         TempData["Info"] = "Logout successfully.";
-
-        // Sign out
         hp.SignOut();
-
         return RedirectToAction("Index", "Home");
     }
 
@@ -75,12 +72,6 @@ public class AccountController(DB db,
     {
         return View();
     }
-
-
-
-    // ------------------------------------------------------------------------
-    // Others
-    // ------------------------------------------------------------------------
 
     // GET: Account/CheckEmail
     public bool CheckEmail(string email)
@@ -96,9 +87,8 @@ public class AccountController(DB db,
 
     // POST: Account/Register
     [HttpPost]
-    public IActionResult Register(RegisterVM vm)
+    public async Task<IActionResult> Register(RegisterVM vm)
     {
-        // Replace IsValidField with GetFieldValidationState check
         if (ModelState.GetFieldValidationState("Email") != ModelValidationState.Invalid &&
             db.Users.Any(u => u.Email == vm.Email))
         {
@@ -113,22 +103,266 @@ public class AccountController(DB db,
 
         if (ModelState.IsValid)
         {
-            // Insert member
-            db.Users.Add(new Member()  // or new Admin()
+            // Create new member
+            var newUser = new Member()
             {
                 Id = Guid.NewGuid().ToString(),
                 Email = vm.Email,
                 Password = hp.HashPassword(vm.Password),
                 Username = vm.Username,
                 Image = hp.SavePhoto(vm.Image, "photos"),
-            });
+                IsEmailVerified = false
+            };
+
+            db.Users.Add(newUser);
             db.SaveChanges();
 
-            TempData["Info"] = "Register successfully. Please login.";
-            return RedirectToAction("Login");
+            // Create verification token
+            var token = Guid.NewGuid().ToString();
+            var verificationToken = new EmailVerificationToken
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = newUser.Id,
+                Token = token,
+                CreatedAt = DateTime.Now,
+                ExpiresAt = DateTime.Now.AddHours(24),
+                IsUsed = false
+            };
+
+            db.EmailVerificationTokens.Add(verificationToken);
+            db.SaveChanges();
+
+            // Generate verification link
+            var verificationLink = Url.Action(
+                "VerifyEmail",
+                "Account",
+                new { token = token },
+                protocol: Request.Scheme
+            );
+
+            // Send verification email
+            try
+            {
+                await emailService.SendVerificationEmailAsync(vm.Email, verificationLink!);
+                TempData["Info"] = "Registration successful! Please check your email to verify your account.";
+            }
+            catch (Exception ex)
+            {
+                // For development: Show link if email fails
+                TempData["Info"] = $"Registration successful! Click here to verify: <a href='{verificationLink}'>Verify Email</a>";
+            }
+
+            return View("RegisterSuccess");
         }
 
         return View(vm);
+    }
+
+    // GET: Account/VerifyEmail
+    public IActionResult VerifyEmail(string token)
+    {
+        var verificationToken = db.EmailVerificationTokens
+            .FirstOrDefault(t => t.Token == token && !t.IsUsed && t.ExpiresAt > DateTime.Now);
+
+        if (verificationToken == null)
+        {
+            TempData["Error"] = "Invalid or expired verification link.";
+            return RedirectToAction("Login");
+        }
+
+        var user = db.Users.Find(verificationToken.UserId);
+        if (user == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Login");
+        }
+
+        // Mark user as verified
+        user.IsEmailVerified = true;
+        user.EmailVerifiedAt = DateTime.Now;
+
+        // Mark token as used
+        verificationToken.IsUsed = true;
+        verificationToken.UsedAt = DateTime.Now;
+
+        db.SaveChanges();
+
+        TempData["Info"] = "Email verified successfully! You can now login.";
+        return View("VerificationSuccess");
+    }
+
+    // GET: Account/ResendVerification
+    public IActionResult ResendVerification()
+    {
+        return View();
+    }
+
+    // POST: Account/ResendVerification
+    [HttpPost]
+    public async Task<IActionResult> ResendVerification(string email)
+    {
+        var user = db.Users.FirstOrDefault(u => u.Email == email);
+
+        if (user == null || user.IsEmailVerified)
+        {
+            TempData["Info"] = "If an unverified account exists with that email, a verification link has been sent.";
+            return RedirectToAction("Login");
+        }
+
+        // Create new verification token
+        var token = Guid.NewGuid().ToString();
+        var verificationToken = new EmailVerificationToken
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserId = user.Id,
+            Token = token,
+            CreatedAt = DateTime.Now,
+            ExpiresAt = DateTime.Now.AddHours(24),
+            IsUsed = false
+        };
+
+        db.EmailVerificationTokens.Add(verificationToken);
+        db.SaveChanges();
+
+        // Generate verification link
+        var verificationLink = Url.Action(
+            "VerifyEmail",
+            "Account",
+            new { token = token },
+            protocol: Request.Scheme
+        );
+
+        // Send verification email
+        try
+        {
+            await emailService.SendVerificationEmailAsync(email, verificationLink!);
+            TempData["Info"] = "Verification email has been resent. Please check your inbox.";
+        }
+        catch (Exception ex)
+        {
+            // For development: Show link if email fails
+            TempData["Info"] = $"Click here to verify: <a href='{verificationLink}'>Verify Email</a>";
+        }
+
+        return RedirectToAction("Login");
+    }
+
+    // GET: Account/ForgotPassword
+    public IActionResult ForgotPassword()
+    {
+        return View();
+    }
+
+    // POST: Account/ForgotPassword
+    [HttpPost]
+    public async Task<IActionResult> ForgotPassword(string email)
+    {
+        var user = db.Users.FirstOrDefault(u => u.Email == email);
+
+        if (user != null)
+        {
+            // Create password reset token
+            var token = Guid.NewGuid().ToString();
+            var resetToken = new PasswordResetToken
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = user.Id,
+                Token = token,
+                CreatedAt = DateTime.Now,
+                ExpiresAt = DateTime.Now.AddHours(1),
+                IsUsed = false
+            };
+
+            db.PasswordResetTokens.Add(resetToken);
+            db.SaveChanges();
+
+            // Generate reset link
+            var resetLink = Url.Action(
+                "ResetPassword",
+                "Account",
+                new { token = token },
+                protocol: Request.Scheme
+            );
+
+            // Send reset email
+            try
+            {
+                await emailService.SendPasswordResetEmailAsync(email, resetLink!);
+            }
+            catch (Exception ex)
+            {
+                // For development: Show link if email fails
+                TempData["Info"] = $"Click here to reset password: <a href='{resetLink}'>Reset Password</a>";
+                return RedirectToAction("Login");
+            }
+        }
+
+        // Always show the same message to prevent email enumeration
+        return View("ForgotPasswordConfirmation");
+    }
+
+    // GET: Account/ResetPassword?token=xxx
+    [HttpGet]
+    public IActionResult ResetPassword(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return RedirectToAction("ForgotPassword");
+        }
+
+        var resetToken = db.PasswordResetTokens
+            .FirstOrDefault(t => t.Token == token && !t.IsUsed && t.ExpiresAt > DateTime.Now);
+
+        if (resetToken == null)
+        {
+            TempData["Error"] = "Invalid or expired reset link.";
+            return RedirectToAction("ForgotPassword");
+        }
+
+        var vm = new ResetPasswordWithTokenVM
+        {
+            Token = token
+        };
+
+        return View(vm);
+    }
+
+    // POST: Account/ResetPassword
+    [HttpPost]
+    public IActionResult ResetPassword(ResetPasswordWithTokenVM vm)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(vm);
+        }
+
+        var resetToken = db.PasswordResetTokens
+            .FirstOrDefault(t => t.Token == vm.Token && !t.IsUsed && t.ExpiresAt > DateTime.Now);
+
+        if (resetToken == null)
+        {
+            TempData["Error"] = "Invalid or expired reset link.";
+            return RedirectToAction("ForgotPassword");
+        }
+
+        var user = db.Users.Find(resetToken.UserId);
+        if (user == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("ForgotPassword");
+        }
+
+        // Update password
+        user.Password = hp.HashPassword(vm.NewPassword);
+
+        // Mark token as used
+        resetToken.IsUsed = true;
+        resetToken.UsedAt = DateTime.Now;
+
+        db.SaveChanges();
+
+        TempData["Info"] = "Password has been reset successfully. You can now login with your new password.";
+        return View("ResetPasswordSuccess");
     }
 
     // GET: Account/UpdatePassword
@@ -148,7 +382,6 @@ public class AccountController(DB db,
             return View(vm);
         }
 
-        // Get user (admin or member) record based on email (PK)
         var u = db.Users.Find(User.Identity!.Name);
         if (u == null)
         {
@@ -156,21 +389,18 @@ public class AccountController(DB db,
             return RedirectToAction("Index", "Home");
         }
 
-        // If current password not matched
         if (!hp.VerifyPassword(u.Password, vm.Current))
         {
             ModelState.AddModelError("Current", "Current password is incorrect.");
             return View(vm);
         }
 
-        // Check if new password is same as current password
         if (hp.VerifyPassword(u.Password, vm.New))
         {
             ModelState.AddModelError("New", "New password must be different from current password.");
             return View(vm);
         }
 
-        // Update user password (hash)
         u.Password = hp.HashPassword(vm.New);
         db.SaveChanges();
 
@@ -178,48 +408,10 @@ public class AccountController(DB db,
         return RedirectToAction();
     }
 
-    // GET: Account/ResetPassword
-    public IActionResult ResetPassword()
-    {
-        return View();
-    }
-
-    // POST: Account/ResetPassword
-    [HttpPost]
-    public IActionResult ResetPassword(ResetPasswordVM vm)
-    {
-        if (!ModelState.IsValid)
-        {
-            return View(vm);
-        }
-
-        var u = db.Users.FirstOrDefault(u => u.Email == vm.Email);
-
-        if (u == null)
-        {
-            ModelState.AddModelError("Email", "Email not found.");
-            return View(vm);
-        }
-
-        // Generate random password
-        string password = hp.RandomPassword();
-
-        // Update user (admin or member) record
-        u.Password = hp.HashPassword(password);
-        db.SaveChanges();
-
-        // TODO: Send reset password email in production
-        // For now, display the password (NOT RECOMMENDED IN PRODUCTION)
-        TempData["Info"] = $"Password has been reset. Your new password is: <b>{password}</b><br/>Please login and change your password immediately.";
-
-        return RedirectToAction("Login");
-    }
-
     // GET: Account/UpdateProfile
     [Authorize(Roles = "Member")]
     public IActionResult UpdateProfile()
     {
-        // Get member record based on email (PK)
         var m = db.Users.Find(User.Identity!.Name);
         if (m == null) return RedirectToAction("Index", "Home");
 
@@ -238,7 +430,6 @@ public class AccountController(DB db,
     [HttpPost]
     public IActionResult UpdateProfile(UpdateProfileVM vm)
     {
-        // Get member record based on email (PK)
         var m = db.Users.Find(User.Identity!.Name);
         if (m == null) return RedirectToAction("Index", "Home");
 
@@ -268,5 +459,4 @@ public class AccountController(DB db,
         vm.ImageURL = m.Image;
         return View(vm);
     }
-
 }
