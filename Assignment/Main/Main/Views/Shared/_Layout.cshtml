@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="/css/app.css" asp-append-version="true">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     @RenderSection("head", false)
 </head>
 <body>
@@ -44,133 +45,91 @@
 
         @if (TempData["Info"] != null)
         {
-            <div class="alert alert-info">
+            <div class="alert alert-info fade-alert">
                 @Html.Raw(TempData["Info"])
             </div>
         }
 
         @if (TempData["Warning"] != null)
         {
-            <div class="alert alert-warning">
+            <div class="alert alert-warning fade-alert">
                 @Html.Raw(TempData["Warning"])
             </div>
         }
 
         @if (TempData["Error"] != null)
         {
-            <div class="alert alert-danger">
+            <div class="alert alert-danger fade-alert">
                 @Html.Raw(TempData["Error"])
             </div>
         }
-
     </header>
 
-    <nav>
-        <a href="/">Index</a>
-        <a asp-controller="Movie" asp-action="Index">Movies</a>
-        <a asp-controller="Food" asp-action="Index">Food & Beverage</a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div class="navbar-nav me-auto">
+                <a class="nav-link" href="/">Index</a>
+                <a class="nav-link" asp-controller="Movie" asp-action="Index">Movies</a>
+                <a class="nav-link" asp-controller="Food" asp-action="Index">Food & Beverage</a>
 
-        @* Cart Icon with Badge *@
-        @{
-            var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
-            var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
-        }
-        <a asp-controller="Food" asp-action="Cart" class="position-relative">
-            Cart
-            @if (cartCount > 0)
-            {
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    @cartCount
-                </span>
-            }
-        </a>
-
-        @* Menu trimming *@
-        @if (User.IsInRole("Member"))
-        {
-            <a href="/Home/Member">Member</a>
-        }
-        @if (User.IsInRole("Admin"))
-        {
-            <a href="/Home/Admin">Admin</a>
-        }
-
-        <div></div>
-
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
-        {
-            <a href="/Account/Logout">Logout</a>
-            <a href="/Account/UpdatePassword">Renew Password</a>
-        }
-        else
-        {
-            <a href="/Account/Login">Login</a>
-            <a href="/Account/Register">Register</a>
-            <a href="/Account/ResetPassword">Reset Password</a>
-        }
-
-    </nav>
-
-    <!-- Replace the existing nav section in your _Layout.cshtml with this -->
-    <nav>
-        <a href="/">Index</a>
-        <a asp-controller="Movie" asp-action="Index">Movies</a>
-        <a asp-controller="Food" asp-action="Index">Food & Beverage</a>
-
-        @* Cart Icon with Badge *@
-        @{
-            var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
-            var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
-        }
-        <a asp-controller="Food" asp-action="Cart" class="position-relative">
-            Cart
-            @if (cartCount > 0)
-            {
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    @cartCount
-                </span>
-            }
-        </a>
-
-        @* Admin Menu *@
-        @if (User.IsInRole("Admin"))
-        {
-            <div class="dropdown d-inline-block">
-                <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Admin
+                @* Cart Icon with Badge *@
+                @{
+                    var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
+                    var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
+                }
+                <a class="nav-link position-relative" asp-controller="Food" asp-action="Cart">
+                    <i class="bi bi-cart"></i> Cart
+                    @if (cartCount > 0)
+                    {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            @cartCount
+                        </span>
+                    }
                 </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">Dashboard</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><h6 class="dropdown-header">Member Management</h6></li>
-                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Members">Manage Members</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><h6 class="dropdown-header">Food & Beverage</h6></li>
-                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="FoodCategories">Manage Categories</a></li>
-                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="FoodItems">Manage Food Items</a></li>
-                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreateFoodItem">Add Food Item</a></li>
-                </ul>
+
+                @* Admin Dropdown Menu *@
+                @if (User.IsInRole("Admin"))
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Admin
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Member Management</h6></li>
+                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="Members">Manage Members</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Food & Beverage</h6></li>
+                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="FoodCategories">Manage Categories</a></li>
+                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="FoodItems">Manage Food Items</a></li>
+                            <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreateFoodItem">Add Food Item</a></li>
+                        </ul>
+                    </li>
+                }
+
+                @* Member Menu *@
+                @if (User.IsInRole("Member"))
+                {
+                    <a class="nav-link" asp-controller="Account" asp-action="UpdateProfile">Profile</a>
+                }
             </div>
-        }
 
-        <div></div>
-
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
-        {
-            <a href="/Account/Logout">Logout</a>
-            <a href="/Account/UpdatePassword">Renew Password</a>
-
-            @if (User.IsInRole("Member"))
-            {
-                <a href="/Account/UpdateProfile">Update Profile</a>
-            }
-        }
-        else
-        {
-            <a href="/Account/Login">Login</a>
-            <a href="/Account/Register">Register</a>
-            <a href="/Account/ForgotPassword">Forgot Password</a>
-        }
+            @* Authentication Links - Right Side *@
+            <div class="navbar-nav ms-auto">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a class="nav-link" href="/Account/Logout">Logout</a>
+                    <a class="nav-link" href="/Account/UpdatePassword">Change Password</a>
+                }
+                else
+                {
+                    <a class="nav-link" href="/Account/Login">Login</a>
+                    <a class="nav-link" href="/Account/Register">Register</a>
+                    <a class="nav-link" href="/Account/ForgotPassword">Forgot Password</a>
+                }
+            </div>
+        </div>
     </nav>
 
     <main>
@@ -179,12 +138,56 @@
     </main>
 
     <style>
-        /* make sure we have a transition available */
         .fade-alert {
             transition: opacity 0.5s ease, max-height 0.5s ease;
             opacity: 1;
-            max-height: 200px; /* adjust if needed */
+            max-height: 200px;
             overflow: hidden;
+        }
+
+        /* Navigation styling */
+        .navbar {
+            margin-bottom: 20px;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            padding: 0.5rem 1rem;
+        }
+
+            .navbar-nav .nav-link:hover {
+                color: rgba(255, 255, 255, 1) !important;
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+            }
+
+        /* Dropdown styling */
+        .dropdown-menu {
+            background-color: #343a40;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .dropdown-item {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+            .dropdown-item:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #fff;
+            }
+
+        .dropdown-header {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.875rem;
+        }
+
+        .dropdown-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Cart badge positioning fix */
+        .nav-link.position-relative {
+            padding-right: 2rem !important;
         }
     </style>
 
@@ -201,30 +204,25 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-          try {
-            // pick up alerts rendered by TempData (any alert class)
-            const alerts = document.querySelectorAll('.fade-alert, .alert');
-            if (!alerts.length) return;
+            try {
+                const alerts = document.querySelectorAll('.fade-alert');
+                if (!alerts.length) return;
 
-            alerts.forEach(alert => {
-              // ensure transition exists
-              alert.style.transition = alert.style.transition || 'opacity 0.5s ease, max-height 0.5s ease';
-              // show (in case bootstrap uses .fade/.show behaviour)
-              alert.classList.add('show');
+                alerts.forEach(alert => {
+                    alert.style.transition = 'opacity 0.5s ease, max-height 0.5s ease';
+                    alert.classList.add('show');
 
-              // wait 2.5s then fade and remove
-              setTimeout(() => {
-                alert.style.opacity = '0';
-                alert.style.maxHeight = '0px';
-                // remove from DOM after transition
-                setTimeout(() => {
-                  if (alert.parentNode) alert.parentNode.removeChild(alert);
-                }, 500); // must match CSS transition duration
-              }, 2500);
-            });
-          } catch (e) {
-            console.error('Alert timeout error:', e);
-          }
+                    setTimeout(() => {
+                        alert.style.opacity = '0';
+                        alert.style.maxHeight = '0px';
+                        setTimeout(() => {
+                            if (alert.parentNode) alert.parentNode.removeChild(alert);
+                        }, 500);
+                    }, 2500);
+                });
+            } catch (e) {
+                console.error('Alert timeout error:', e);
+            }
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
