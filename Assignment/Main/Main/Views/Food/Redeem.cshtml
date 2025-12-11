@@ -1,0 +1,210 @@
+﻿@{
+    ViewBag.Title = "Redeem Food Order";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-qr-code-scan"></i> Redeem Food Order</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label for="redemptionCode" class="form-label">Enter Redemption Code:</label>
+                        <input type="text" id="redemptionCode" class="form-control form-control-lg text-center font-monospace"
+                               placeholder="XXXXXXXX" maxlength="8" style="letter-spacing: 0.3em;">
+                    </div>
+
+                    <button type="button" class="btn btn-primary btn-lg w-100" onclick="redeemOrder()">
+                        <i class="bi bi-check-circle"></i> Redeem Order
+                    </button>
+
+                    <div id="result" class="mt-4"></div>
+
+                    <!-- Order Details (shown after successful redemption) -->
+                    <div id="orderDetails" class="mt-4" style="display: none;">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Order Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="orderContent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Redemptions -->
+            <div class="card mt-4 shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Redemptions</h5>
+                </div>
+                <div class="card-body">
+                    <div id="recentRedemptions">
+                        <p class="text-muted">No recent redemptions in this session.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .font-monospace {
+        font-family: 'Courier New', monospace;
+    }
+</style>
+
+@section foot {
+    <script>
+        let recentRedemptions = [];
+
+        function redeemOrder() {
+            const code = document.getElementById('redemptionCode').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('result');
+            const orderDetailsDiv = document.getElementById('orderDetails');
+
+            if (!code || code.length !== 8) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Please enter a valid 8-character redemption code.
+                    </div>
+                `;
+                return;
+            }
+
+            // Show loading
+            resultDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="bi bi-hourglass-split"></i> Processing redemption...
+                </div>
+            `;
+
+            // Send AJAX request
+            fetch('@Url.Action("RedeemOrder", "Food")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'redemptionCode=' + encodeURIComponent(code)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill"></i> <strong>${data.message}</strong>
+                        </div>
+                    `;
+
+                    // Show order details
+                    let itemsHtml = '';
+                    data.order.items.forEach(item => {
+                        itemsHtml += `
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><strong>${item.name}</strong> × ${item.quantity}</span>
+                            </div>
+                        `;
+                    });
+
+                    document.getElementById('orderContent').innerHTML = `
+                        <div class="row mb-3">
+                            <div class="col-sm-4"><strong>Order ID:</strong></div>
+                            <div class="col-sm-8">${data.order.orderId}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4"><strong>Order Date:</strong></div>
+                            <div class="col-sm-8">${data.order.orderDate}</div>
+                        </div>
+                        <hr>
+                        <h6>Items:</h6>
+                        ${itemsHtml}
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <h5>Total:</h5>
+                            <h5 class="text-success">RM ${data.order.totalAmount.toFixed(2)}</h5>
+                        </div>
+                    `;
+
+                    orderDetailsDiv.style.display = 'block';
+
+                    // Add to recent redemptions
+                    recentRedemptions.unshift({
+                        code: code,
+                        orderId: data.order.orderId,
+                        time: new Date().toLocaleTimeString(),
+                        amount: data.order.totalAmount
+                    });
+
+                    updateRecentRedemptions();
+
+                    // Clear input
+                    document.getElementById('redemptionCode').value = '';
+
+                    // Auto-hide success message after 5 seconds
+                    setTimeout(() => {
+                        resultDiv.innerHTML = '';
+                        orderDetailsDiv.style.display = 'none';
+                    }, 10000);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-x-circle-fill"></i> <strong>Error:</strong> ${data.message}
+                        </div>
+                    `;
+                    orderDetailsDiv.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-x-circle-fill"></i> An error occurred. Please try again.
+                    </div>
+                `;
+            });
+        }
+
+        function updateRecentRedemptions() {
+            const recentDiv = document.getElementById('recentRedemptions');
+
+            if (recentRedemptions.length === 0) {
+                recentDiv.innerHTML = '<p class="text-muted">No recent redemptions in this session.</p>';
+                return;
+            }
+
+            let html = '<div class="list-group">';
+            recentRedemptions.slice(0, 5).forEach(redemption => {
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>${redemption.code}</strong>
+                                <br>
+                                <small class="text-muted">${redemption.orderId}</small>
+                            </div>
+                            <div class="text-end">
+                                <div>RM ${redemption.amount.toFixed(2)}</div>
+                                <small class="text-muted">${redemption.time}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            recentDiv.innerHTML = html;
+        }
+
+        // Allow Enter key to redeem
+        document.getElementById('redemptionCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                redeemOrder();
+            }
+        });
+
+        // Auto-focus on input
+        document.getElementById('redemptionCode').focus();
+    </script>
+}

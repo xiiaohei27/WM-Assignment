@@ -1,6 +1,8 @@
 ﻿@model FoodOrder
 @{
     ViewBag.Title = "Order Confirmation";
+    var isExpired = Model.ExpiresAt < DateTime.Now;
+    var timeRemaining = Model.ExpiresAt - DateTime.Now;
 }
 
 <div class="container mt-4">
@@ -16,6 +18,63 @@
 
     <div class="row">
         <div class="col-md-8 mx-auto">
+            <!-- QR Code Card -->
+            <div class="card mb-4 border-@(Model.IsRedeemed ? "success" : isExpired ? "danger" : "primary")">
+                <div class="card-header bg-@(Model.IsRedeemed ? "success" : isExpired ? "danger" : "primary") text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-qr-code"></i> Redemption QR Code
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    @if (Model.IsRedeemed)
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>Already Redeemed</strong>
+                            <p class="mb-0">This order was redeemed on @Model.RedeemedAt?.ToString("MMM dd, yyyy hh:mm tt")</p>
+                        </div>
+                    }
+                    else if (isExpired)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>Expired</strong>
+                            <p class="mb-0">This order expired on @Model.ExpiresAt?.ToString("MMM dd, yyyy hh:mm tt")</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <img src="data:image/png;base64,@ViewBag.QRCodeBase64" alt="QR Code" class="img-fluid mb-3" style="max-width: 300px;">
+
+                        <div class="alert alert-info">
+                            <strong><i class="bi bi-info-circle"></i> Redemption Code:</strong>
+                            <h3 class="mb-0 font-monospace">@Model.RedemptionCode</h3>
+                        </div>
+
+                        @if (timeRemaining != null && timeRemaining.Value.TotalMinutes > 0)
+                        {
+                            <div class="alert alert-warning">
+                                <i class="bi bi-clock"></i>
+                                <strong>Valid for:</strong>
+                                @if (timeRemaining.Value.TotalHours >= 1)
+                                {
+                                    <span>@timeRemaining.Value.Hours hour(s) @timeRemaining.Value.Minutes minute(s)</span>
+                                }
+                                else
+                                {
+                                    <span>@timeRemaining.Value.Minutes minute(s)</span>
+                                }
+                            </div>
+                        }
+
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-calendar"></i> Valid until: @Model.ExpiresAt?.ToString("MMM dd, yyyy hh:mm tt")
+                        </p>
+                    }
+                </div>
+            </div>
+
+            <!-- Order Details Card -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h5>Order Details</h5>
@@ -32,12 +91,15 @@
                     <div class="row mb-3">
                         <div class="col-sm-4"><strong>Status:</strong></div>
                         <div class="col-sm-8">
-                            <span class="badge bg-warning">@Model.Status</span>
+                            <span class="badge bg-@(Model.IsRedeemed ? "success" : Model.Status == "Confirmed" ? "info" : "warning")">
+                                @Model.Status
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Items Ordered Card -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h5>Items Ordered</h5>
@@ -61,10 +123,34 @@
                 </div>
             </div>
 
+            <!-- Instructions -->
+            @if (!Model.IsRedeemed && !isExpired)
+            {
+                <div class="card mb-4 border-info">
+                    <div class="card-body">
+                        <h5><i class="bi bi-info-circle-fill text-info"></i> How to Redeem</h5>
+                        <ol class="mb-0">
+                            <li>Show this QR code or redemption code at the counter</li>
+                            <li>Staff will scan the code or enter the redemption code</li>
+                            <li>Collect your food and beverages</li>
+                            <li>Order is valid for 2 hours from purchase time</li>
+                        </ol>
+                    </div>
+                </div>
+            }
+
             <div class="text-center">
                 <a asp-action="Index" class="btn btn-primary me-2">Order More Food</a>
+                <a asp-action="MyOrders" class="btn btn-outline-secondary me-2">View My Orders</a>
                 <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Back to Home</a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .font-monospace {
+        font-family: 'Courier New', monospace;
+        letter-spacing: 0.2em;
+    }
+</style>

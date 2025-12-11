@@ -1,0 +1,92 @@
+﻿@model List<FoodOrder>
+@{
+    ViewBag.Title = "My Orders";
+}
+
+<div class="container mt-4">
+    <h2>My Food Orders</h2>
+
+@if (!Model.Any())
+{
+        <div class="alert alert-info">
+            You haven't placed any food orders yet. <a asp-action="Index">Browse our menu</a>
+        </div>
+}
+else
+{
+        <div class="row">
+            @foreach (var order in Model)
+            {
+                var isExpired = order.ExpiresAt < DateTime.Now;
+                var timeRemaining = order.ExpiresAt - DateTime.Now;
+
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 @(order.IsRedeemed ? "border-success" : isExpired ? "border-danger" : "")">
+                        <div class="card-header @(order.IsRedeemed ? "bg-success text-white" : isExpired ? "bg-danger text-white" : "")">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Order #@order.RedemptionCode</strong>
+                                    <br>
+                                    <small>@order.OrderDateTime.ToString("MMM dd, yyyy hh:mm tt")</small>
+                                </div>
+                                <span class="badge @(order.IsRedeemed ? "bg-light text-success" : isExpired ? "bg-light text-danger" : "bg-primary")">
+                                    @order.Status
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6>Items:</h6>
+                            <ul class="list-unstyled">
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <li>
+                                        <strong>@item.FoodItem.Name</strong> × @item.Quantity
+                                        <span class="float-end">RM @item.Subtotal.ToString("F2")</span>
+                                    </li>
+                                }
+                            </ul>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-3">
+                                <strong>Total:</strong>
+                                <strong class="text-primary">RM @order.TotalAmount.ToString("F2")</strong>
+                            </div>
+
+                            @if (order.IsRedeemed)
+                            {
+                                <div class="alert alert-success mb-0">
+                                    <i class="bi bi-check-circle-fill"></i> Redeemed on @order.RedeemedAt?.ToString("MMM dd, yyyy hh:mm tt")
+                                </div>
+                            }
+                            else if (isExpired)
+                            {
+                                <div class="alert alert-danger mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> Expired
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning mb-3">
+                                    <i class="bi bi-clock"></i>
+                                    <strong>Valid for:</strong>
+                                    @if (timeRemaining != null && timeRemaining.Value.TotalMinutes > 0)
+                                    {
+                                        if (timeRemaining.Value.TotalHours >= 1)
+                                        {
+                                            <span>@timeRemaining.Value.Hours hour(s) @timeRemaining.Value.Minutes minute(s)</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@timeRemaining.Value.Minutes minute(s)</span>
+                                        }
+                                    }
+                                </div>
+                                <a asp-action="OrderQR" asp-route-orderId="@order.Id" class="btn btn-primary w-100">
+                                    <i class="bi bi-qr-code"></i> Show QR Code
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+}

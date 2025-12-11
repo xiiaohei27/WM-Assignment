@@ -335,15 +335,28 @@ public class FoodOrder
     public decimal TotalAmount { get; set; }
 
     [MaxLength(20)]
-    public string Status { get; set; } = "Pending"; // Pending, Confirmed, Preparing, Ready, Completed, Cancelled
+    public string Status { get; set; } = "Pending"; // Pending, Confirmed, Preparing, Ready, Completed, Cancelled, Redeemed
 
     [MaxLength(50)]
     public string? PaymentMethod { get; set; }
 
-    public string? TicketId { get; set; } // Optional: Link to movie ticket
+    public string? TicketId { get; set; }
     public Ticket? Ticket { get; set; }
 
     public List<OrderItem> OrderItems { get; set; } = new();
+
+    // QR Code and Redemption fields
+    [MaxLength(100)]
+    public string? RedemptionCode { get; set; } // Unique code for QR
+
+    public DateTime? ExpiresAt { get; set; } // When the order expires
+
+    public bool IsRedeemed { get; set; } = false;
+
+    public DateTime? RedeemedAt { get; set; }
+
+    [MaxLength(100)]
+    public string? RedeemedBy { get; set; } // Staff member who processed redemption
 }
 
 public class OrderItem
