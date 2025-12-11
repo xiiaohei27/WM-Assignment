@@ -1,0 +1,60 @@
+﻿@model FoodCategory
+@{
+    ViewBag.Title = "Delete Food Category";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Delete Food Category</h2>
+        <a asp-action="FoodCategories" class="btn btn-secondary">Back to List</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirm Deletion</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.FoodItems.Any())
+                    {
+                        <div class="alert alert-danger">
+                            <strong>Cannot Delete!</strong> This category has @Model.FoodItems.Count food item(s).
+                            <br>Please delete or reassign all items first.
+                        </div>
+
+                        <h5>Items in this category:</h5>
+                        <ul>
+                            @foreach (var item in Model.FoodItems)
+                            {
+                                <li>@item.Name</li>
+                            }
+                        </ul>
+
+                        <a asp-action="FoodCategories" class="btn btn-secondary">Back to List</a>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <strong>Warning:</strong> This action cannot be undone!
+                        </div>
+
+                        <h5>@Model.Name</h5>
+                        <p class="text-muted">@Model.Description</p>
+
+                        <p class="mt-3">Are you sure you want to delete this category?</p>
+
+                        <form method="post" class="mt-4">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Yes, Delete This Category
+                                </button>
+                                <a asp-action="FoodCategories" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

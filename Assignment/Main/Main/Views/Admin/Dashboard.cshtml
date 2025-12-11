@@ -1,0 +1,73 @@
+﻿@{
+    ViewBag.Title = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Members</h5>
+                    <h2>@ViewBag.TotalMembers</h2>
+                    <a asp-action="Members" class="btn btn-light btn-sm mt-2">Manage Members</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Food Items</h5>
+                    <h2>@ViewBag.TotalFoodItems</h2>
+                    <a asp-action="FoodItems" class="btn btn-light btn-sm mt-2">Manage Items</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Categories</h5>
+                    <h2>@ViewBag.TotalCategories</h2>
+                    <a asp-action="FoodCategories" class="btn btn-light btn-sm mt-2">Manage Categories</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Orders</h5>
+                    <h2>@ViewBag.TodayOrders</h2>
+                    <small>Total: @ViewBag.TotalOrders</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Links</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a asp-action="Members" class="list-group-item list-group-item-action">
+                        <i class="bi bi-people"></i> Manage Members
+                    </a>
+                    <a asp-action="FoodCategories" class="list-group-item list-group-item-action">
+                        <i class="bi bi-tag"></i> Manage Food Categories
+                    </a>
+                    <a asp-action="FoodItems" class="list-group-item list-group-item-action">
+                        <i class="bi bi-basket"></i> Manage Food Items
+                    </a>
+                    <a asp-action="CreateFoodItem" class="list-group-item list-group-item-action">
+                        <i class="bi bi-plus-circle"></i> Add New Food Item
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

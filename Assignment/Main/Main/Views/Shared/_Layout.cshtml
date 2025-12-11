@@ -86,6 +86,10 @@
         </a>
 
         @* Menu trimming *@
+        @if (User.IsInRole("Member"))
+        {
+            <a href="/Home/Member">Member</a>
+        }
         @if (User.IsInRole("Admin"))
         {
             <a href="/Home/Admin">Admin</a>
@@ -107,10 +111,82 @@
 
     </nav>
 
+    <!-- Replace the existing nav section in your _Layout.cshtml with this -->
+    <nav>
+        <a href="/">Index</a>
+        <a asp-controller="Movie" asp-action="Index">Movies</a>
+        <a asp-controller="Food" asp-action="Index">Food & Beverage</a>
+
+        @* Cart Icon with Badge *@
+        @{
+            var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
+            var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
+        }
+        <a asp-controller="Food" asp-action="Cart" class="position-relative">
+            Cart
+            @if (cartCount > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @cartCount
+                </span>
+            }
+        </a>
+
+        @* Admin Menu *@
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="dropdown d-inline-block">
+                <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Admin
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">Dashboard</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Member Management</h6></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Members">Manage Members</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Food & Beverage</h6></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="FoodCategories">Manage Categories</a></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="FoodItems">Manage Food Items</a></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreateFoodItem">Add Food Item</a></li>
+                </ul>
+            </div>
+        }
+
+        <div></div>
+
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <a href="/Account/Logout">Logout</a>
+            <a href="/Account/UpdatePassword">Renew Password</a>
+
+            @if (User.IsInRole("Member"))
+            {
+                <a href="/Account/UpdateProfile">Update Profile</a>
+            }
+        }
+        else
+        {
+            <a href="/Account/Login">Login</a>
+            <a href="/Account/Register">Register</a>
+            <a href="/Account/ForgotPassword">Forgot Password</a>
+        }
+    </nav>
+
     <main>
         <h1>@ViewBag.Title</h1>
         @RenderBody()
     </main>
+
+    <style>
+        /* make sure we have a transition available */
+        .fade-alert {
+            transition: opacity 0.5s ease, max-height 0.5s ease;
+            opacity: 1;
+            max-height: 200px; /* adjust if needed */
+            overflow: hidden;
+        }
+    </style>
 
     <footer>
         Developed by <b>Team RSD</b> &middot;
@@ -122,15 +198,6 @@
     <script src="/js/jquery.validate.min.js"></script>
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="/js/app.js" asp-append-version="true"></script>
-    <style>
-        /* make sure we have a transition available */
-        .fade-alert {
-            transition: opacity 0.5s ease, max-height 0.5s ease;
-            opacity: 1;
-            max-height: 200px; /* adjust if needed */
-            overflow: hidden;
-        }
-    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -160,6 +227,9 @@
           }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
     @RenderSection("foot", false)
 </body>
 </html>

@@ -99,3 +99,65 @@ public class ResetPasswordVM
     [EmailAddress]
     public string Email { get; set; }
 }
+
+// Add these to your existing Models/ViewModel.cs file
+
+public class EditMemberVM
+{
+    public string Id { get; set; }
+
+    [Required]
+    [StringLength(100)]
+    public string Username { get; set; }
+
+    [Required]
+    [StringLength(100)]
+    [EmailAddress]
+    public string Email { get; set; }
+
+    [DisplayName("Email Verified")]
+    public bool IsEmailVerified { get; set; }
+
+    public string? ImageURL { get; set; }
+
+    public IFormFile? Image { get; set; }
+}
+
+public class FoodCategoryVM
+{
+    public string? Id { get; set; }
+
+    [Required]
+    [StringLength(50)]
+    public string Name { get; set; }
+
+    [StringLength(200)]
+    public string? Description { get; set; }
+}
+public class FoodItemVM
+{
+    public string? Id { get; set; }
+
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; }
+
+    [StringLength(500)]
+    public string? Description { get; set; }
+
+    [Required]
+    [Range(0.01, 1000.00)]
+    [DisplayFormat(DataFormatString = "{0:F2}")]
+    public decimal Price { get; set; }
+
+    [Required]
+    [DisplayName("Category")]
+    public string CategoryId { get; set; }
+
+    [DisplayName("Available")]
+    public bool IsAvailable { get; set; } = true;
+
+    public string? ImageURL { get; set; }
+
+    public IFormFile? Image { get; set; }
+}
