@@ -1,15 +1,14 @@
-﻿@model List<FoodItem>
+﻿@model List<Movie>
 @{
-    ViewBag.Title = "Manage Food Items";
-    var categories = ViewBag.Categories as List<FoodCategory>;
+	ViewBag.Title = "Manage Movie";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Manage Food Items</h2>
+        <h2>Manage Movie</h2>
         <div>
-            <a asp-action="CreateFoodItem" class="btn btn-success">
-                <i class="bi bi-plus-circle"></i> Add Food Item
+            <a asp-action="CreateMovie" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Add Movie
             </a>
             <a asp-action="Dashboard" class="btn btn-secondary">Back to Dashboard</a>
         </div>
@@ -20,13 +19,13 @@
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">Category</label>
-                    <select name="categoryId" class="form-select" onchange="this.form.submit()">
-                        <option value="">All Categories</option>
-                        @foreach (var cat in categories)
+                    <label class="form-label">Genre</label>
+                    <select name="genre" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Genre</option>
+                        @foreach (var gen in ViewBag.Genre) //stucked
                         {
-                            <option value="@cat.Id" selected="@(ViewBag.CategoryId == cat.Id)">
-                                @cat.Name
+                            <option value="@gen"> 
+                                @gen 
                             </option>
                         }
                     </select>
@@ -57,29 +56,32 @@
                     <thead>
                         <tr>
                             <th>Image</th>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th>Title</th>
+                            <th>Genre</th>
+                            <th>ReleaseDate</th>
+                            <th>Classification</th>
+                            <th>SpokenLanguage</th>
+                            <th>RunningTime</th>
+                            <th>Director</th>
+                            <th>Cast</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (!Model.Any())
                         {
                             <tr>
-                                <td colspan="6" class="text-center">No food items found.</td>
+                                <td colspan="6" class="text-center">No Movie found.</td>
                             </tr>
                         }
                         else
                         {
-                            @foreach (var item in Model)
+                            @foreach (var movie in Model)
                             {
                                 <tr>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(item.Image))
+                                        @if (!string.IsNullOrEmpty(movie.Image))
                                         {
-                                            <img src="~/food/@item.Image" alt="@item.Name"
+                                            <img src="~/images/@movie.Image" alt="@movie.Title"
                                                  class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
                                         }
                                         else
@@ -91,30 +93,25 @@
                                         }
                                     </td>
                                     <td>
-                                        <strong>@item.Name</strong>
-                                        @if (!string.IsNullOrEmpty(item.Description))
+                                        <strong>@movie.Title</strong>
+                                        @if (!string.IsNullOrEmpty(movie.Description))
                                         {
                                             <br>
-                                
-                                            <small class="text-muted">@(item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)</small>
+
+                                            <small class="text-muted">@(movie.Description.Length > 50 ? movie.Description.Substring(0, 50) + "..." : movie.Description)</small>
                                         }
                                     </td>
-                                    <td><span class="badge bg-info">@item.Category.Name</span></td>
-                                    <td><strong>RM @item.Price.ToString("F2")</strong></td>
+                                    <td><span class="badge bg-info">@movie.Genre</span></td>
+                                    <td><strong>@movie.ReleaseDate.ToString("dd/MM/yyyy hh:mm:ss tt")</strong></td>
+                                    <td>@movie.Classification</td>
+                                    <td>@movie.SpokenLanguage</td>
+                                    <td>@movie.RunningTime</td>
+                                    <td>@movie.Director</td>
+                                    <td>@movie.Cast</td>
                                     <td>
-                                        @if (item.IsAvailable)
-                                        {
-                                            <span class="badge bg-success">Available</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">Unavailable</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <a asp-action="EditFoodItem" asp-route-id="@item.Id"
+                                        <a asp-action="EditMovie" asp-route-id="@movie.Id"
                                            class="btn btn-sm btn-primary">Edit</a>
-                                        <a asp-action="DeleteFoodItem" asp-route-id="@item.Id"
+                                        <a asp-action="DeleteMovie" asp-route-id="@movie.Id"
                                            class="btn btn-sm btn-danger">Delete</a>
                                     </td>
                                 </tr>

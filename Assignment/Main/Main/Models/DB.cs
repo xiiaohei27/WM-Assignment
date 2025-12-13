@@ -221,6 +221,12 @@ public class Seat
     [Required, MaxLength(10)]
     public string SeatNumber { get; set; }
 
+    [Required, MaxLength(20)]
+    public string SeatType { get; set; }
+
+    [Required, MaxLength(20)]
+    public string Status { get; set; }
+
     public string HallId { get; set; }
     public Hall Hall { get; set; }
 

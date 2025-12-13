@@ -460,4 +460,26 @@ public class AdminController(DB db, Helper hp) : Controller
 
         return View();
     }
+
+    //GET: Admin/MovieManage
+    public IActionResult MovieManage(string? genre, string? search)
+    {
+        var movie = db.Movies.AsQueryable();
+
+        if (!string.IsNullOrEmpty(genre))
+        {
+            movie = movie.Where(m => m.Genre == genre);
+        }
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            movie = movie.Where(m => m.Title.Contains(search));
+        }
+
+        ViewBag.Genre = db.Movies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
+        ViewBag.SelectedGenre = genre;
+        ViewBag.Search = search;
+
+        return View(movie.OrderBy(m => m.Genre).ToList());
+    }
 }
