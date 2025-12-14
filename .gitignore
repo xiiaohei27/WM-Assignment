@@ -34,3 +34,4 @@ project.assets.json
 *.cache
 *.pdb
 /Main/DB.mdf
+appsettings.Development.json

@@ -361,4 +361,59 @@ public class FoodController : Controller
 
         return View(order);
     }
+
+    public IActionResult Select()
+    {
+        var foodItems = db.FoodItems
+                          .Include(f => f.Category)
+                          .ToList();
+
+        ViewBag.Categories = db.FoodCategories.ToList();
+
+        // Read session
+        var selectedOrderIds = HttpContext.Session
+                                          .GetObject<List<(string FoodId, int Quantity)>>("PendingOrderIds")
+                                          ?? new List<(string, int)>();
+
+        // Pass a dictionary to view for easier lookup
+        ViewBag.SelectedQuantities = selectedOrderIds
+                                     .Where(f => f.FoodId != null)
+                                     .ToDictionary(f => f.FoodId, f => f.Quantity);
+
+        return View(foodItems);
+    }
+
+    [HttpPost]
+    public IActionResult Select(Dictionary<string, int> quantities)
+    {
+        var cart = new List<OrderCartItemVM>();
+
+        foreach (var entry in quantities)
+        {
+            if (entry.Value > 0)
+            {
+                var food = db.FoodItems.FirstOrDefault(f => f.Id == entry.Key);
+                if (food != null)
+                {
+                    cart.Add(new OrderCartItemVM
+                    {
+                        FoodId = food.Id,
+                        Name = food.Name,
+                        Price = food.Price,
+                        Quantity = entry.Value
+                    });
+                }
+            }
+        }
+
+        HttpContext.Session.SetObject("PendingOrderIds", cart);
+
+        if (cart.Any())
+        {
+            var selectedNames = string.Join(", ", cart.Select(f => f.Name));
+            TempData["Info"] = $"You've selected: {selectedNames}";
+        }
+
+        return RedirectToAction("Checkout", "Ticket");
+    }
 }

@@ -161,3 +161,17 @@ public class FoodItemVM
 
     public IFormFile? Image { get; set; }
 }
+public class TicketCheckoutVM
+{
+    public Showtime Showtime { get; set; }
+    public List<Seat> Seats { get; set; } = new List<Seat>();
+    public List<OrderCartItemVM> FoodCart { get; set; } = new List<OrderCartItemVM>();
+}
+
+public class OrderCartItemVM
+{
+    public string FoodId { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public int Quantity { get; set; }
+}

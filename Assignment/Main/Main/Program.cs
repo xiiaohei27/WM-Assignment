@@ -1,5 +1,6 @@
 global using Main.Models;
 using Main;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,8 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
 
 // Add Session middleware
 app.UseSession();

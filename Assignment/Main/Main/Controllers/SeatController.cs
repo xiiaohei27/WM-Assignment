@@ -50,6 +50,6 @@ public class SeatController(DB db) : Controller
         TempData["Info"] = $"You've selected {selectedSeatIds.Count} seat(s). Please order food & beverages to complete your booking.";
 
         // Redirect to food ordering
-        return RedirectToAction("Index", "Food");
+        return RedirectToAction("Select", "Food");
     }
 }

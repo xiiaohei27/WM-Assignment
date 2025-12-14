@@ -1,0 +1,70 @@
+﻿@model List<FoodItem>
+
+@{
+    ViewBag.Title = "Select Food & Beverages";
+    var categories = ViewBag.Categories as List<FoodCategory>;
+}
+
+<div class="container mt-4">
+    <h2>Select Food & Beverages</h2>
+    <p class="text-muted">
+        Optional – you may skip this step if you don’t want food.
+    </p>
+
+    <!-- Categories (optional filter) -->
+    <div class="mb-4">
+        <a asp-action="Select" class="btn btn-outline-primary">All</a>
+        @foreach (var category in categories)
+        {
+            <a asp-action="Select" asp-route-categoryId="@category.Id" class="btn @(ViewBag.SelectedCategoryId == category.Id ? "btn-primary" : "btn-outline-secondary")">
+                @category.Name
+            </a>
+        }
+    </div>
+
+    <!-- Food Items -->
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No food items available.</div>
+    }
+    else
+    {
+        <form method="post" asp-action="Select">
+            <div class="row">
+                @foreach (var item in Model)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            @if (!string.IsNullOrEmpty(item.Image))
+                            {
+                                <img src="~/food/@item.Image" class="card-img-top" style="height:200px; object-fit:cover;" />
+                            }
+
+                            <div class="card-body d-flex flex-column">
+                                <h5>@item.Name</h5>
+                                <p class="text-muted small">@item.Description</p>
+
+                                <div class="mb-2">
+                                    <strong>RM @item.Price.ToString("F2")</strong>
+                                </div>
+
+                                <input type="number"
+                                       name="quantities[@item.Id]"
+                                       value="@(ViewBag.SelectedQuantities.ContainsKey(item.Id) ? ViewBag.SelectedQuantities[item.Id] : 0)"
+                                       min="0"
+                                       max="10"
+                                       class="form-control"
+                                       style="width:80px;" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-controller="Seat" asp-action="SelectSeat" class="btn btn-outline-secondary">← Back</a>
+                <button type="submit" class="btn btn-primary">Next →</button>
+            </div>
+        </form>
+    }
+</div>
