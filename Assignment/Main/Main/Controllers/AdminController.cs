@@ -1,6 +1,7 @@
 ﻿using Main.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Main.Controllers;
@@ -481,5 +482,66 @@ public class AdminController(DB db, Helper hp) : Controller
         ViewBag.Search = search;
 
         return View(movie.OrderBy(m => m.Genre).ToList());
+    }
+
+    //GET: Admin/CreateMovie
+    public IActionResult CreateMovie()
+    {
+        ViewBag.Genre = db.Movies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
+        return View();
+    }
+
+    //POST: Admin/CreateMovie
+   [HttpPost]
+    public IActionResult CreateMovie(MovieVM vm)
+    {
+        {
+            if (vm.Trailer != null )
+            {
+                if (vm.Trailer.ContentType != "video/mp4") 
+                {
+                    ModelState.AddModelError("Trailer", "Trailer must be an MP4 video.");
+                }
+            }
+
+            if (vm.Image != null)
+            {
+                var e = hp.ValidatePhoto(vm.Image);
+                if (e != "") ModelState.AddModelError("Image", e);
+            }
+
+            if (db.Movies.Any(m => m.Title == vm.Title))
+            {
+                ModelState.AddModelError("Title", "Duplicate Title.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var movie = new Movie
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Title = vm.Title,
+                    Genre = vm.Genre,
+                    ReleaseDate = vm.ReleaseDate,
+                    Classification = vm.Classification,
+                    SpokenLanguage = vm.SpokenLanguage,
+                    RunningTime = vm.RunningTime,
+                    Director = vm.Director,
+                    Cast = vm.Cast,
+                    Description = vm.Description,
+                    Trailer = vm.Trailer != null ? hp.SaveVideo(vm.Trailer, "trailers") : null,
+                    Image = vm.Image != null ? hp.SavePhoto(vm.Image, "images") : null
+                };
+
+                db.Movies.Add(movie);
+                db.SaveChanges();
+
+                TempData["Info"] = "Movie created successfully.";
+                return RedirectToAction(nameof(MovieManage));
+            }
+
+            ViewBag.Genre = db.Movies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
+            return View(vm);
+        }
     }
 }

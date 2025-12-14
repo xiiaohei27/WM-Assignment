@@ -161,3 +161,37 @@ public class FoodItemVM
 
     public IFormFile? Image { get; set; }
 }
+
+public class MovieVM 
+{
+    [Required]
+    [MaxLength(100)]
+    public string Title { get; set; }
+    [Required]
+    public string Genre { get; set; }
+    [Required]
+    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy hh:mm:ss tt}" ,ApplyFormatInEditMode = true)]
+    public DateTime ReleaseDate { get; set; }
+    [Required]
+    [MaxLength(20)]
+    public string Classification { get; set; }
+    [Required]
+    [MaxLength(50)]
+    public string SpokenLanguage { get; set; }
+    [Required]
+    [Range(1, 500)]
+    public int RunningTime { get; set; }
+    [Required]
+    [MaxLength(100)]
+    public string Director { get; set; }
+    [Required]
+    [MaxLength(200)]
+    public string Cast { get; set; }
+    [FileExtensions(Extensions = "mp4")]
+    public IFormFile Trailer { get; set; }
+    [Required] 
+    [MaxLength(200)]
+    public string Description { get; set; }
+    public string ImageURL { get; set; }
+    public IFormFile? Image { get; set; }
+}

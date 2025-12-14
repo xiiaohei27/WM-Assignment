@@ -1,0 +1,115 @@
+﻿@model MovieVM
+@{
+	ViewBag.Title = "Create Movies";
+    var genre = ViewBag.Genre as List<String>;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Create Movies</h2>
+        <a asp-action="MovieManage" class="btn btn-secondary">Back to List</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label"></label>
+                            <input asp-for="Title" class="form-control" placeholder="Movie Title" autofocus>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Genre" class="form-label"></label>
+                                <select asp-for="Genre" class="form-select">
+                                    <option value="">-- Select Genre --</option>
+                                        @foreach (var gen in genre)
+                                        {
+                                            <option value = "@gen" >
+                                            @gen
+                                            </option>
+                                        }
+                                </select>
+                                <span asp-validation-for="Genre" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ReleaseDate" class="form-label"></label>
+                                <input asp-for="ReleaseDate" type="datetime-local" class="form-control">
+                                <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Classification" class="form-label"></label>
+                                <input asp-for="Classification" class="form-control" placeholder="Movie Classification">
+                                <span asp-validation-for="Classification" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SpokenLanguage" class="form-label"></label>
+                                <input asp-for="SpokenLanguage" class="form-control" placeholder="Movie SpokenLanguage">
+                                <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="RunningTime" class="form-label"></label>
+                                <input asp-for="RunningTime" class="form-control" placeholder="Movie Running Time (minutes)">
+                                <span asp-validation-for="RunningTime" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Director" class="form-label"></label>
+                                <input asp-for="Director" class="form-control" placeholder="Movie Director">
+                                <span asp-validation-for="Director" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Cast" class="form-label"></label>
+                                <input asp-for="Cast" class="form-control" placeholder="Movie Casts">
+                                <span asp-validation-for="Cast" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Trailer" class="form-label">Trailer Upload</label>
+                                <input asp-for="Trailer" class="form-control" accept="video/mp4"">
+                                <span asp-validation-for="Trailer" class="text-danger"></span>
+                                <small class="text-muted">MP4 only</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Image" class="form-label">Movie Thumbnail</label>
+                            <input asp-for="Image" class="form-control" accept="image/jpeg,image/png" ">
+                            <span asp-validation-for="Image" class="text-danger"></span>
+                            <small class="text-muted">JPG or PNG, max 1MB</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"
+                                      placeholder="Description of the Movie"></textarea>
+                            <span asp-validation-for="Genre" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-plus-circle"></i> Create Movie
+                            </button>
+                            <a asp-action="MovieManage" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -149,4 +149,19 @@ public class Helper(IWebHostEnvironment en,
     //    smtp.Send(mail);
 
     //}
+
+    // ------------------------------------------------------------------------
+    // Video Upload
+    // ------------------------------------------------------------------------
+
+    public string SaveVideo(IFormFile f, string folder)
+    {
+        var file = Guid.NewGuid().ToString("n") + "mp4"; // preserve extension
+        var path = Path.Combine(en.WebRootPath, folder, file);
+
+        using var stream = new FileStream(path, FileMode.Create);
+        f.CopyTo(stream);
+
+        return file;
+    }
 }
