@@ -161,8 +161,22 @@ public class FoodItemVM
 
     public IFormFile? Image { get; set; }
 }
+public class TicketCheckoutVM
+{
+    public Showtime Showtime { get; set; }
+    public List<Seat> Seats { get; set; } = new List<Seat>();
+    public List<OrderCartItemVM> FoodCart { get; set; } = new List<OrderCartItemVM>();
+}
 
-public class MovieVM 
+public class OrderCartItemVM
+{
+    public string FoodId { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public int Quantity { get; set; }
+}
+
+public class MovieVM
 {
     [Required]
     [MaxLength(100)]
@@ -170,7 +184,7 @@ public class MovieVM
     [Required]
     public string Genre { get; set; }
     [Required]
-    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy hh:mm:ss tt}" ,ApplyFormatInEditMode = true)]
+    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
     public DateTime ReleaseDate { get; set; }
     [Required]
     [MaxLength(20)]
@@ -189,7 +203,7 @@ public class MovieVM
     public string Cast { get; set; }
     [FileExtensions(Extensions = "mp4")]
     public IFormFile Trailer { get; set; }
-    [Required] 
+    [Required]
     [MaxLength(200)]
     public string Description { get; set; }
     public string ImageURL { get; set; }

@@ -224,6 +224,9 @@ public class Seat
     [Required, MaxLength(20)]
     public string SeatType { get; set; }
 
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal Multiplier { get; set; }
+
     [Required, MaxLength(20)]
     public string Status { get; set; }
 
@@ -243,6 +246,9 @@ public class Showtime
 
     public DateTime StartDateTime { get; set; }
     public DateTime EndDateTime { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TicketPrice { get; set; }
 
     public Movie Movie { get; set; }
     public Hall Hall { get; set; }
@@ -278,6 +284,7 @@ public class EInvoice
 
     public DateTime PurchaseDate { get; set; }
 
+    [Column(TypeName = "decimal(18,2)")]
     public decimal TotalAmount { get; set; }
 
     [MaxLength(50)]
