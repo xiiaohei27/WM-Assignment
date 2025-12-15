@@ -179,6 +179,9 @@ public class OrderCartItemVM
 public class MovieVM
 {
     [Required]
+    [MaxLength(30)]
+    public string Id { get; set; }
+    [Required]
     [MaxLength(100)]
     public string Title { get; set; }
     [Required]
@@ -202,6 +205,7 @@ public class MovieVM
     [MaxLength(200)]
     public string Cast { get; set; }
     [FileExtensions(Extensions = "mp4")]
+    public string TrailerURL { get; set; }
     public IFormFile Trailer { get; set; }
     [Required]
     [MaxLength(200)]

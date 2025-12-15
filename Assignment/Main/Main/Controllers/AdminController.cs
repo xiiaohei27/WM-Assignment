@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace Main.Controllers;
 
@@ -345,7 +346,7 @@ public class AdminController(DB db, Helper hp) : Controller
         return View(vm);
     }
 
-    // GET: Admin/EditFoodItem/5
+    // GET: Admin/EditFoodItem/
     public IActionResult EditFoodItem(string id)
     {
         var item = db.FoodItems.Find(id);
@@ -462,6 +463,10 @@ public class AdminController(DB db, Helper hp) : Controller
         return View();
     }
 
+    // ============================================================================
+    // MOVIE MANAGEMENT
+    // ============================================================================
+
     //GET: Admin/MovieManage
     public IActionResult MovieManage(string? genre, string? search)
     {
@@ -496,7 +501,7 @@ public class AdminController(DB db, Helper hp) : Controller
     public IActionResult CreateMovie(MovieVM vm)
     {
         {
-            if (vm.Trailer != null )
+            if (vm.Trailer != null)
             {
                 if (vm.Trailer.ContentType != "video/mp4") 
                 {
@@ -543,5 +548,103 @@ public class AdminController(DB db, Helper hp) : Controller
             ViewBag.Genre = db.Movies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
             return View(vm);
         }
+    }
+
+    // GET: Admin/EditMovie/
+    public IActionResult EditMovie(string id)
+    {
+        var m = db.Movies.Find(id);
+        if (m == null)
+        {
+            TempData["Error"] = "Movie not found.";
+            return RedirectToAction(nameof(MovieManage));
+        }
+
+        var vm = new MovieVM
+        {
+            Id = m.Id,
+            Title = m.Title,
+            Genre = m.Genre,
+            ReleaseDate = m.ReleaseDate,
+            Classification = m.Classification,
+            SpokenLanguage = m.SpokenLanguage,
+            RunningTime = m.RunningTime,
+            Director = m.Director,
+            Cast = m.Cast,
+            Description = m.Description,
+            ImageURL = m.Image 
+        };
+
+        ViewBag.Genre = db.Movies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
+        return View(vm);
+    }
+
+    //POST: Admin/EditMovie
+    [HttpPost]
+    public IActionResult EditMovie(MovieVM vm)
+    {
+        var m = db.Movies.Find(vm.Id);
+
+        if (m == null)
+        {
+            TempData["Error"] = "Movie not found.";
+            return RedirectToAction(nameof(MovieManage));
+        }
+
+        if (vm.Trailer != null)
+        {
+            if (vm.Trailer.ContentType != "video/mp4")
+            {
+                ModelState.AddModelError("Trailer", "Trailer must be an MP4 video.");
+            }
+        }
+
+        if (vm.Image != null)
+        {
+            var e = hp.ValidatePhoto(vm.Image);
+            if (e != "") ModelState.AddModelError("Image", e);
+        }
+
+        if (db.Movies.Any(m => m.Title == vm.Title && m.Id != vm.Id))
+        {
+            ModelState.AddModelError("Title", "Duplicate Title.");
+        }
+
+        if (ModelState.IsValid) 
+        {
+            m.Title = vm.Title;
+            m.Genre = vm.Genre;
+            m.ReleaseDate = vm.ReleaseDate;
+            m.Classification = vm.Classification;
+            m.SpokenLanguage = vm.SpokenLanguage;
+            m.RunningTime = vm.RunningTime;
+            m.Director = vm.Director;
+            m.Cast = vm.Cast;
+            m.Description = vm.Description;
+
+            if (vm.Image != null) 
+            {
+                if (!string.IsNullOrEmpty(m.Image))
+                {
+                    hp.DeletePhoto(m.Image, "Images");
+                }
+                m.Image = hp.SavePhoto(vm.Image, "Images");
+            }
+
+            if (vm.Trailer != null) 
+            {
+                if (!string.IsNullOrEmpty(m.Trailer))
+                {
+                    hp.DeletePhoto(m.Trailer, "Trailer");
+                }
+                m.Trailer = hp.SaveVideo(vm.Trailer, "Trailer");
+            }
+            db.SaveChanges();
+
+            TempData["Info"] = "Movie Details updated successfully";
+            return RedirectToAction(nameof(MovieManage));
+        }
+        ViewBag.Genre = db.Movies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
+        return View(vm);
     }
 }
