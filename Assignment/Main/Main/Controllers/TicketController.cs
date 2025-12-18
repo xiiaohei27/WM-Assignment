@@ -151,8 +151,8 @@ namespace Main.Controllers
 
         public IActionResult Success()
         {
-            SaveBookingFromSession();
             TempData["Success"] = "Your payment was successful and tickets have been booked!";
+            SaveBookingFromSession();
             return RedirectToAction("Index", "Home");
         }
 
@@ -174,7 +174,7 @@ namespace Main.Controllers
                                             ?? new List<OrderCartItemVM>();
 
             if (string.IsNullOrEmpty(showtimeId) || !selectedSeatIds.Any())
-                return;     //uneccesary?
+                return;
 
             // 1. Create one ticket
             var ticket = new Ticket
@@ -206,7 +206,7 @@ namespace Main.Controllers
                     TicketId = ticket.Id,
                     FoodItemId = item.FoodId,
                     Quantity = item.Quantity,
-                    Redeemed = false
+                    Redeemed = false    
                 });
             }
 
