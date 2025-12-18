@@ -1,0 +1,30 @@
+﻿@model List<BookingHistoryVM>
+
+@{
+    ViewBag.Title = "Booking History";
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Purchase Date</th>
+            <th>Movie</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ticket in Model)
+        {
+            <tr>
+                <td>@ticket.BookingDate.ToString("dd MMM yyyy")</td>
+                <td>@ticket.MovieTitle</td>
+                <td>
+                    <a class="btn btn-primary btn-sm"
+                       href="@Url.Action("Detail", "Ticket", new { id = ticket.TicketId })">
+                        View Details
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

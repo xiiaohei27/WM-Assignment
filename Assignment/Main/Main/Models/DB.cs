@@ -13,6 +13,8 @@ public class DB(DbContextOptions<DB> options) : DbContext(options)
     public DbSet<Movie> Movies { get; set; }
     public DbSet<Showtime> Showtimes { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<TicketFood> TicketFoods { get; set; }
+    public DbSet<TicketSeat> TicketSeats { get; set; }
     public DbSet<Cinema> Cinemas { get; set; }
     public DbSet<Hall> Halls { get; set; }
     public DbSet<Seat> Seats { get; set; }
@@ -233,7 +235,7 @@ public class Seat
     public string HallId { get; set; }
     public Hall Hall { get; set; }
 
-    public List<Ticket> Tickets { get; set; } = new();
+    public List<TicketSeat> TicketSeats { get; set; } = new();
 }
 
 public class Showtime
@@ -262,7 +264,6 @@ public class Ticket
 
     public string? UserId { get; set; }
     public string? ShowtimeId { get; set; }
-    public string? SeatId { get; set; }
 
     public DateTime BookingDateTime { get; set; } = DateTime.Now;
 
@@ -270,9 +271,40 @@ public class Ticket
 
     public User User { get; set; }
     public Showtime Showtime { get; set; }
-    public Seat Seat { get; set; }
     public EInvoice EInvoice { get; set; }
+    public List<TicketFood> TicketFoods { get; set; } = new();
+    public List<TicketSeat> TicketSeats { get; set; } = new();
 }
+
+public class TicketFood
+{
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    public string TicketId { get; set; }
+    public Ticket Ticket { get; set; }
+
+    public string FoodItemId { get; set; }
+    public FoodItem FoodItem { get; set; }
+
+    public int Quantity { get; set; }
+
+    public bool Redeemed { get; set; } = false; // Staff can mark it as redeemed
+    public DateTime? RedeemedAt { get; set; }
+}
+
+public class TicketSeat
+{
+    [Key]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    public string TicketId { get; set; }
+    public Ticket Ticket { get; set; }
+
+    public string SeatId { get; set; }
+    public Seat Seat { get; set; }
+}
+
 
 public class EInvoice
 {

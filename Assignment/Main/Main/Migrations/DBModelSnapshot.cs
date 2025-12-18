@@ -464,9 +464,6 @@ namespace Main.Migrations
                     b.Property<string>("EInvoiceId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("SeatId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("ShowtimeId")
                         .HasColumnType("nvarchar(450)");
 
@@ -477,13 +474,64 @@ namespace Main.Migrations
 
                     b.HasIndex("EInvoiceId");
 
-                    b.HasIndex("SeatId");
-
                     b.HasIndex("ShowtimeId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Tickets");
+                });
+
+            modelBuilder.Entity("Main.Models.TicketFood", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FoodItemId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Redeemed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("RedeemedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TicketId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FoodItemId");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("TicketFoods");
+                });
+
+            modelBuilder.Entity("Main.Models.TicketSeat", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SeatId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TicketId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeatId");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("TicketSeats");
                 });
 
             modelBuilder.Entity("Main.Models.User", b =>
@@ -662,10 +710,6 @@ namespace Main.Migrations
                         .WithMany("Tickets")
                         .HasForeignKey("EInvoiceId");
 
-                    b.HasOne("Main.Models.Seat", "Seat")
-                        .WithMany("Tickets")
-                        .HasForeignKey("SeatId");
-
                     b.HasOne("Main.Models.Showtime", "Showtime")
                         .WithMany("Tickets")
                         .HasForeignKey("ShowtimeId");
@@ -676,11 +720,47 @@ namespace Main.Migrations
 
                     b.Navigation("EInvoice");
 
-                    b.Navigation("Seat");
-
                     b.Navigation("Showtime");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Main.Models.TicketFood", b =>
+                {
+                    b.HasOne("Main.Models.FoodItem", "FoodItem")
+                        .WithMany()
+                        .HasForeignKey("FoodItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Main.Models.Ticket", "Ticket")
+                        .WithMany("TicketFoods")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FoodItem");
+
+                    b.Navigation("Ticket");
+                });
+
+            modelBuilder.Entity("Main.Models.TicketSeat", b =>
+                {
+                    b.HasOne("Main.Models.Seat", "Seat")
+                        .WithMany("TicketSeats")
+                        .HasForeignKey("SeatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Main.Models.Ticket", "Ticket")
+                        .WithMany("TicketSeats")
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Seat");
+
+                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("Main.Models.Cinema", b =>
@@ -722,12 +802,19 @@ namespace Main.Migrations
 
             modelBuilder.Entity("Main.Models.Seat", b =>
                 {
-                    b.Navigation("Tickets");
+                    b.Navigation("TicketSeats");
                 });
 
             modelBuilder.Entity("Main.Models.Showtime", b =>
                 {
                     b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("Main.Models.Ticket", b =>
+                {
+                    b.Navigation("TicketFoods");
+
+                    b.Navigation("TicketSeats");
                 });
 
             modelBuilder.Entity("Main.Models.User", b =>

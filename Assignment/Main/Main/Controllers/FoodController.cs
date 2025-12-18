@@ -194,17 +194,23 @@ public class FoodController : Controller
         if (!string.IsNullOrEmpty(pendingShowtimeId) && pendingSeatIds != null && pendingSeatIds.Any())
         {
             // Create tickets
+            var ticket = new Ticket
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = User.Identity?.IsAuthenticated == true ? User.Identity.Name : null,
+                ShowtimeId = pendingShowtimeId,
+                BookingDateTime = DateTime.Now
+            };
+            db.Tickets.Add(ticket);
+
             foreach (var seatId in pendingSeatIds)
             {
-                var ticket = new Ticket
+                db.TicketSeats.Add(new TicketSeat
                 {
                     Id = Guid.NewGuid().ToString(),
-                    UserId = User.Identity?.IsAuthenticated == true ? User.Identity.Name : null,
-                    ShowtimeId = pendingShowtimeId,
-                    SeatId = seatId,
-                    BookingDateTime = DateTime.Now
-                };
-                db.Tickets.Add(ticket);
+                    TicketId = ticket.Id,
+                    SeatId = seatId
+                });
             }
 
             // Clear pending ticket data
