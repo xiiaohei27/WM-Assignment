@@ -4,11 +4,14 @@
     var bookedSeats = ViewBag.BookedSeats as List<string>;
     ViewBag.Title = "Select Seats for " + showtime.Movie.Title;
 
-    // Group seats by row letter
     var seatRows = Model
-        .OrderBy(s => s.SeatNumber)
-        .GroupBy(s => new string(s.SeatNumber.TakeWhile(c => !char.IsDigit(c)).ToArray()))
-        .ToList();
+    // Sort by row letter (A, B, C...)
+    .OrderBy(s => s.SeatNumber[0])
+    // Sort by seat number (001, 002, 010 → 1, 2, 10)
+    .ThenBy(s => int.Parse(s.SeatNumber.Substring(1)))
+    // Group seats by row letter
+    .GroupBy(s => s.SeatNumber[0].ToString())
+    .ToList();
 }
 
 <p>@showtime.Hall.Cinema.Name - @showtime.Hall.Name</p>
@@ -33,5 +36,9 @@
         }
     </div>
 
-    <button type="submit">Confirm Seats</button>
+    <div class="d-flex justify-content-between mt-4">
+        <a asp-controller="Showtime" asp-action="SelectShowtime" asp-route-movieId="@showtime.Movie.Id"
+           asp-route-date="@showtime.StartDateTime.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary">← Back</a>
+        <button type="submit" class="btn btn-primary">Next →</button>
+    </div>
 </form>

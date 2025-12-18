@@ -213,3 +213,16 @@ public class MovieVM
     public string ImageURL { get; set; }
     public IFormFile? Image { get; set; }
 }
+
+public class BookingHistoryVM
+{
+    public string TicketId { get; set; }
+    public string MovieTitle { get; set; }
+    public string CinemaName { get; set; }
+    public string HallName { get; set; }
+    public List<string> SeatNumbers { get; set; } = new List<string>();
+    public DateTime Showtime { get; set; }
+    public DateTime BookingDate { get; set; }
+    public List<string> FoodItems { get; set; } = new();
+    public string QRCodeData { get; set; } // text to encode in QR
+}

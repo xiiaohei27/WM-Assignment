@@ -99,7 +99,9 @@
                                         <tr>
                                             <td>@ticket.Showtime?.Movie?.Title</td>
                                             <td>@ticket.Showtime?.StartDateTime.ToString("MMM dd, yyyy hh:mm tt")</td>
-                                            <td>@ticket.Seat?.SeatNumber</td>
+                                            <td>
+                                                @string.Join(", ", ticket.TicketSeats.Select(ts => ts.Seat.SeatNumber))
+                                            </td>
                                             <td>@ticket.BookingDateTime.ToString("MMM dd, yyyy")</td>
                                         </tr>
                                     }

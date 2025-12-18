@@ -23,9 +23,9 @@ public class SeatController(DB db) : Controller
         var allSeats = showtime.Hall.Seats.OrderBy(s => s.SeatNumber).ToList();
 
         // Seats already booked for this showtime
-        var bookedSeats = db.Tickets
-                            .Where(t => t.ShowtimeId == showtimeId)
-                            .Select(t => t.SeatId)
+        var bookedSeats = db.TicketSeats
+                            .Where(ts => ts.Ticket.ShowtimeId == showtimeId)
+                            .Select(ts => ts.SeatId)
                             .ToList();
 
         ViewBag.Showtime = showtime;

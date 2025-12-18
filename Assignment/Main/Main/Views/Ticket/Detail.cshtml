@@ -1,0 +1,29 @@
+﻿@model BookingHistoryVM
+
+@{
+    ViewBag.Title = "Booking Detail";
+}
+
+<p>Movie: @Model.MovieTitle</p>
+<p>Cinema: @Model.CinemaName</p>
+<p>Hall: @Model.HallName</p>
+<p>Seats: @string.Join(", ", Model.SeatNumbers)</p>
+<p>Showtime: @Model.Showtime.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
+<p>Booked on: @Model.BookingDate.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
+
+@if (Model.FoodItems.Any())
+{
+    <p>Food & Drinks:</p>
+    <ul>
+        @foreach (var f in Model.FoodItems)
+        {
+            <li>@f</li>
+        }
+    </ul>
+}
+
+<img src="@Url.Action("QRCode", "Ticket", new { id = Model.TicketId })" />
+
+<div class="d-flex justify-content-between mt-4">
+    <a asp-controller="Ticket" asp-action="History" class="btn btn-outline-secondary">← Back</a>
+</div>
