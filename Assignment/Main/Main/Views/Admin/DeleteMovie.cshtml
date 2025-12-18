@@ -1,4 +1,71 @@
-﻿@page
-@model Main.Views.Admin.DeleteMovieModel
+﻿
+@model Movie
 @{
+	ViewBag.Title = "Delete Movie";
 }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Delete Movie</h2>
+        <a asp-action="MovieManage" class="btn btn-secondary">Back to List</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirm Deletion</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <strong>Warning:</strong> This action cannot be undone!
+                    </div>
+
+                    <div class="text-center mb-3">
+                        @if (!string.IsNullOrEmpty(Model.Image))
+                        {
+                            <img src="/images/@Model.Image" alt="@Model.Id"
+                                 class="rounded" style="max-width: 200px;">
+                        }
+                        else
+                        {
+                            <div class="bg-secondary rounded mx-auto" style="width: 200px; height: 200px;"></div>
+                        }
+                    </div>
+
+                    <h5 class="text-center">@Model.Title</h5>
+                    <p class="text-center text-muted">@Model.Genre</p>
+
+                    <hr>
+
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <strong>ReleaseDate:</strong><br>
+                            @Model.ReleaseDate
+                        </div>
+                        <div class="col-6">
+                            <strong>Classification:</strong><br>
+                            @Model.Classification
+                        </div>
+                    </div>
+
+                    <p>Are you sure you want to delete this Movie?</p>
+                    <ul>
+                        <li>The movie will be permanently removed from the system</li>
+                        <li>The movie thumbnail will be deleted</li>
+                        <li>This action cannot be undone</li>
+                    </ul>
+
+                    <form method="post" class="mt-4">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Yes, Delete This Movie
+                            </button>
+                            <a asp-action="MovieManage" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
