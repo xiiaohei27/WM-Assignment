@@ -1,4 +1,4 @@
-﻿@model MovieVM
+﻿@model MovieEditVM
 @{
     ViewBag.Title = "Edit Movie";
     var genre = ViewBag.Genre as List<String>;
@@ -15,6 +15,7 @@
             <div class="card">
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="mb-3">
@@ -25,14 +26,21 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Genre" class="form-label"></label>
-                                <select asp-for="Genre" class="form-select">
+                                <select asp-for="Genre" class="form-select" id="genreSelect">
                                     @foreach (var gen in genre)
                                     {
                                         <option value="@gen">
                                             @gen
                                         </option>
                                     }
+                                    <option value="new">Other Genre</option>
                                 </select>
+                                @* d-none is hidden use bootstrap*@
+                                <input type="text"
+                                       class="form-control mt-2 d-none"
+                                       id="newGenreInput"
+                                       name="NewGenre"
+                                       placeholder="Enter new genre" />
                                 <span asp-validation-for="Genre" class="text-danger"></span>
                             </div>
 
@@ -80,7 +88,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Trailer" class="form-label">Trailer Upload</label>
-                                    @if (!string.IsNullOrEmpty(Model.ImageURL))
+                                    @if (!string.IsNullOrEmpty(Model.TrailerURL))
                                     {
                                         <div class="mb-2">
                                              <video class="rounded" style="max-width: 400px; height: auto;" controls>
@@ -90,9 +98,9 @@
                                             <p class="text-muted small">Current Trailer</p>
                                         </div>
                                     }
-                                <input asp-for="Trailer" class="form-control" accept="video/mp4" ">
+                                <input asp-for="Trailer" type="file" class="form-control" accept="video/mp4">
                                 <span asp-validation-for="Trailer" class="text-danger"></span>
-                                <small class="text-muted">MP4 only</small>
+                                <small class="text-muted">MP4 only, max 100MB</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Image" class="form-label">Movie Thumbnail</label>
@@ -105,9 +113,9 @@
                                             <p class="text-muted small">Current Thumbnail</p>
                                         </div>
                                     }
-                                        <input asp-for="Image" class="form-control" accept="image/jpeg,image/png" ">
+                                <input asp-for="Image" type="file" class="form-control" accept="image/jpeg,image/png">
                                         <span asp-validation-for="Image" class="text-danger"></span>
-                                        <small class="text-muted">JPG or PNG, max 1MB</small>
+                                        <small class="text-muted">JPG or PNG, max 5MB</small>
                             </div>
                         </div>
 
@@ -131,3 +139,20 @@
     </div>
 </div>
 
+@section foot {
+    <script>
+        const genreSelect = document.getElementById("genreSelect"); //find select with id:genreSelect
+        const newGenreInput = document.getElementById("newGenreInput"); //find input with id:newGenreInput
+
+        genreSelect.addEventListener("change", function () { //when user change the selection run this
+            if (this.value === "new") {
+                newGenreInput.classList.remove("d-none"); //if it is new then remove hidden and show textbox
+                newGenreInput.required = true; //Input Required (must type in)
+            } else {
+                newGenreInput.classList.add("d-none");
+                newGenreInput.value = "";
+                newGenreInput.required = false;
+            }
+        });
+    </script>
+}

@@ -25,7 +25,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Genre" class="form-label"></label>
-                                <select asp-for="Genre" class="form-select">
+                                <select asp-for="Genre" class="form-select" id="genreSelect">
                                     <option value="">-- Select Genre --</option>
                                         @foreach (var gen in genre)
                                         {
@@ -33,7 +33,14 @@
                                             @gen
                                             </option>
                                         }
+                                    <option value="new">Other Genre</option>
                                 </select>
+                                @* d-none is hidden use bootstrap*@
+                                <input type="text"
+                                       class="form-control mt-2 d-none"
+                                       id="newGenreInput"
+                                       name="NewGenre"
+                                       placeholder="Enter new genre" /> 
                                 <span asp-validation-for="Genre" class="text-danger"></span>
                             </div>
 
@@ -81,17 +88,17 @@
 
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Trailer" class="form-label">Trailer Upload</label>
-                                <input asp-for="Trailer" class="form-control" accept="video/mp4"">
+                                <input asp-for="Trailer" type="file" class="form-control" accept="video/mp4">
                                 <span asp-validation-for="Trailer" class="text-danger"></span>
-                                <small class="text-muted">MP4 only</small>
+                                <small class="text-muted">MP4 only, max 100MB</small>
                             </div>
                         </div>
 
                         <div class="col-md-6 mb-3">
                             <label asp-for="Image" class="form-label">Movie Thumbnail</label>
-                            <input asp-for="Image" class="form-control" accept="image/jpeg,image/png" ">
+                            <input asp-for="Image" type="file" class="form-control" accept="image/jpeg,image/png">
                             <span asp-validation-for="Image" class="text-danger"></span>
-                            <small class="text-muted">JPG or PNG, max 1MB</small>
+                            <small class="text-muted">JPG or PNG, max 5MB</small>
                         </div>
 
                         <div class="mb-3">
@@ -113,3 +120,21 @@
         </div>
     </div>
 </div>
+
+@section foot {
+    <script>
+        const genreSelect = document.getElementById("genreSelect"); //find select with id:genreSelect
+        const newGenreInput = document.getElementById("newGenreInput"); //find input with id:newGenreInput
+
+        genreSelect.addEventListener("change", function () { //when user change the selection run this
+            if (this.value === "new") {
+                newGenreInput.classList.remove("d-none"); //if it is new then remove hidden and show textbox
+                newGenreInput.required = true; //Input Required (must type in)
+            } else {
+                newGenreInput.classList.add("d-none");
+                newGenreInput.value = "";
+                newGenreInput.required = false;
+            }
+        });
+    </script>
+}

@@ -26,9 +26,9 @@ public class Helper(IWebHostEnvironment en,
         {
             return "Only JPG and PNG photo is allowed.";
         }
-        else if (f.Length > 1 * 1024 * 1024)
+        else if (f.Length > 5 * 1024 * 1024)
         {
-            return "Photo size cannot more than 1MB.";
+            return "Photo size cannot more than 5MB.";
         }
 
         return "";
@@ -156,12 +156,29 @@ public class Helper(IWebHostEnvironment en,
 
     public string SaveVideo(IFormFile f, string folder)
     {
-        var file = Guid.NewGuid().ToString("n") + "mp4"; // preserve extension
+        var file = Guid.NewGuid().ToString("n") + ".mp4"; // preserve extension
         var path = Path.Combine(en.WebRootPath, folder, file);
 
         using var stream = new FileStream(path, FileMode.Create);
         f.CopyTo(stream);
 
         return file;
+    }
+
+    public string ValidateVideo(IFormFile f)
+    {
+        var reType = new Regex(@"^video/mp4$", RegexOptions.IgnoreCase);
+        var reName = new Regex(@"^.+\.mp4$", RegexOptions.IgnoreCase);
+
+        if (!reType.IsMatch(f.ContentType) || !reName.IsMatch(f.FileName))
+        {
+            return "Only MP4 video is allowed.";
+        }
+        else if (f.Length > 100 * 1024 * 1024)
+        {
+            return "Video size cannot exceed 100 MB.";
+        }
+
+        return "";
     }
 }

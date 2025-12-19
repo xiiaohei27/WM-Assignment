@@ -493,7 +493,7 @@ public class AdminController(DB db, Helper hp) : Controller
     public IActionResult CreateMovie()
     {
         ViewBag.Genre = db.Movies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
-        return View();
+        return View(new MovieVM());
     }
 
     //POST: Admin/CreateMovie
@@ -502,10 +502,8 @@ public class AdminController(DB db, Helper hp) : Controller
     {
         if (vm.Trailer != null)
         {
-            if (vm.Trailer.ContentType != "video/mp4") 
-            {
-                ModelState.AddModelError("Trailer", "Trailer must be an MP4 video.");
-            }
+            var e = hp.ValidateVideo(vm.Trailer);
+            if (e!= "") ModelState.AddModelError("Trailer", e);
         }
 
         if (vm.Image != null)
@@ -519,11 +517,35 @@ public class AdminController(DB db, Helper hp) : Controller
             ModelState.AddModelError("Title", "Duplicate Title.");
         }
 
+        if (vm.Genre == "new")
+        {
+            if (string.IsNullOrWhiteSpace(vm.NewGenre))
+            {
+                ModelState.AddModelError("Genre", "Please enter a genre.");
+            }
+            else
+            {
+                vm.Genre = vm.NewGenre.Trim();
+            }
+        }
+
         if (ModelState.IsValid)
         {
+            string newId;
+            var lastMovie = db.Movies.OrderByDescending(m => m.Id).FirstOrDefault();
+            if (lastMovie == null)
+            {
+                newId = "M001"; // first movie
+            }
+            else
+            {
+                int lastNumber = int.Parse(lastMovie.Id.Substring(1));
+                newId = $"M{(lastNumber + 1):D3}";
+            }
+
             var movie = new Movie
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = newId,
                 Title = vm.Title,
                 Genre = vm.Genre,
                 ReleaseDate = vm.ReleaseDate,
@@ -557,7 +579,7 @@ public class AdminController(DB db, Helper hp) : Controller
             return RedirectToAction(nameof(MovieManage));
         }
 
-        var vm = new MovieVM
+        var vm = new MovieEditVM
         {
             Id = m.Id,
             Title = m.Title,
@@ -569,7 +591,8 @@ public class AdminController(DB db, Helper hp) : Controller
             Director = m.Director,
             Cast = m.Cast,
             Description = m.Description,
-            ImageURL = m.Image 
+            ImageURL = m.Image,
+            TrailerURL = m.Trailer
         };
 
         ViewBag.Genre = db.Movies.Select(m => m.Genre).Distinct().OrderBy(g => g).ToList();
@@ -578,7 +601,7 @@ public class AdminController(DB db, Helper hp) : Controller
 
     //POST: Admin/EditMovie
     [HttpPost]
-    public IActionResult EditMovie(MovieVM vm)
+    public IActionResult EditMovie(MovieEditVM vm)
     {
         var m = db.Movies.Find(vm.Id);
 
@@ -590,10 +613,8 @@ public class AdminController(DB db, Helper hp) : Controller
 
         if (vm.Trailer != null)
         {
-            if (vm.Trailer.ContentType != "video/mp4")
-            {
-                ModelState.AddModelError("Trailer", "Trailer must be an MP4 video.");
-            }
+            var e = hp.ValidateVideo(vm.Trailer);
+            if (e != "") ModelState.AddModelError("Trailer", e);
         }
 
         if (vm.Image != null)
@@ -605,6 +626,18 @@ public class AdminController(DB db, Helper hp) : Controller
         if (db.Movies.Any(m => m.Title == vm.Title && m.Id != vm.Id))
         {
             ModelState.AddModelError("Title", "Duplicate Title.");
+        }
+
+        if (vm.Genre == "new")
+        {
+            if (string.IsNullOrWhiteSpace(vm.NewGenre))
+            {
+                ModelState.AddModelError("Genre", "Please enter a genre.");
+            }
+            else
+            {
+                vm.Genre = vm.NewGenre.Trim();
+            }
         }
 
         if (ModelState.IsValid) 
@@ -623,18 +656,18 @@ public class AdminController(DB db, Helper hp) : Controller
             {
                 if (!string.IsNullOrEmpty(m.Image))
                 {
-                    hp.DeletePhoto(m.Image, "Images");
+                    hp.DeletePhoto(m.Image, "images");
                 }
-                m.Image = hp.SavePhoto(vm.Image, "Images");
+                m.Image = hp.SavePhoto(vm.Image, "images");
             }
 
             if (vm.Trailer != null) 
             {
                 if (!string.IsNullOrEmpty(m.Trailer))
                 {
-                    hp.DeletePhoto(m.Trailer, "Trailer");
+                    hp.DeletePhoto(m.Trailer, "trailers");
                 }
-                m.Trailer = hp.SaveVideo(vm.Trailer, "Trailer");
+                m.Trailer = hp.SaveVideo(vm.Trailer, "trailers");
             }
             db.SaveChanges();
 
@@ -677,7 +710,7 @@ public class AdminController(DB db, Helper hp) : Controller
 
         if (!string.IsNullOrEmpty(m.Trailer))
         {
-            hp.DeletePhoto(m.Trailer, "trailer");
+            hp.DeletePhoto(m.Trailer, "trailers");
         }
 
         db.Movies.Remove(m);
