@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using Main.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -6,12 +7,13 @@ using System.Net.Mail;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using static System.Net.Mime.MediaTypeNames;
+using Microsoft.EntityFrameworkCore;
 
 namespace Main;
 
 public class Helper(IWebHostEnvironment en,
                     IHttpContextAccessor ct,
-                    IConfiguration cf)
+                    IConfiguration cf, DB db)
 {
     // ------------------------------------------------------------------------
     // Photo Upload
@@ -124,31 +126,31 @@ public class Helper(IWebHostEnvironment en,
         return password;
     }
 
-    //// ------------------------------------------------------------------------
-    //// Email
-    //// ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Email
+    // ------------------------------------------------------------------------
 
-    //public void SendEmail(MailMessage mail)
-    //{
-    //    string user = cf["Smtp:User"]!;
-    //    string pass = cf["Smtp:Pass"]!;
-    //    string host = cf["Smtp:Host"]!;
-    //    string name = cf["Smtp:Name"]!;
-    //    int port = cf.GetValue<int>(cf["Smtp:Port"]!);
+    public void SendEmail(MailMessage mail)
+    {
+        string user = cf["Email:Username"]!;
+        string pass = cf["Email:Password"]!;
+        string host = cf["Email:SmtpHost"]!;
+        string name = cf["Email:FromName"]!;
+        int port = cf.GetValue<int>("Email:SmtpPort");
 
-    //    mail.From = new MailAddress(user, name);
+        mail.From = new MailAddress(user, name);
 
-    //    using var smtp = new SmtpClient
-    //    {
-    //        Host = host,
-    //        Port = port,
-    //        EnableSsl = true,
-    //        Credentials = new System.Net.NetworkCredential(user, pass),
-    //    };
+        using var smtp = new SmtpClient
+        {
+            Host = host,
+            Port = port,
+            EnableSsl = true,
+            Credentials = new System.Net.NetworkCredential(user, pass),
+        };
 
-    //    smtp.Send(mail);
+        smtp.Send(mail);
 
-    //}
+    }
 
     // ------------------------------------------------------------------------
     // Video Upload
@@ -163,6 +165,27 @@ public class Helper(IWebHostEnvironment en,
         f.CopyTo(stream);
 
         return file;
+    }
+
+    public decimal CalculateTotal(Ticket ticket)
+    {
+        decimal seatTotal = 0;
+        if (ticket.TicketSeats != null && ticket.Showtime != null)
+        {
+            seatTotal = ticket.TicketSeats.Sum(ts =>
+                (ts.Seat != null ? ticket.Showtime.TicketPrice * ts.Seat.Multiplier : 0)
+            );
+        }
+
+        decimal foodTotal = 0;
+        if (ticket.TicketFoods != null)
+        {
+            foodTotal = ticket.TicketFoods.Sum(tf =>
+                (tf.FoodItem != null ? tf.FoodItem.Price * tf.Quantity : 0)
+            );
+        }
+
+        return seatTotal + foodTotal;
     }
 
     public string ValidateVideo(IFormFile f)

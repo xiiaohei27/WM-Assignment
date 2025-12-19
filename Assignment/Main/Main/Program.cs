@@ -1,6 +1,6 @@
 global using Main.Models;
 using Main;
-using Microsoft.AspNetCore.Http.Features;
+using QuestPDF.Infrastructure;
 using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,5 +55,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<DB>();
     FoodDataSeeder.SeedFoodData(db);
 }
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 app.Run();
