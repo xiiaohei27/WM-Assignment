@@ -1,12 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Main.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRCoder;
 using Stripe.Checkout;
+using System.Net.Mail;
+using System.Net.Sockets;
+using System.Security.Claims;
+using static QuestPDF.Helpers.Colors;
 
 namespace Main.Controllers
 {
-    public class TicketController(DB db) : Controller
+    public class TicketController(DB db, Helper hp) : Controller
     {
         // Show checkout page
         public IActionResult Checkout()
@@ -63,6 +68,8 @@ namespace Main.Controllers
             var pendingOrderIds = HttpContext.Session
                                            .GetObject<List<OrderCartItemVM>>("PendingOrderIds")
                                            ?? new List<OrderCartItemVM>();
+            string email = User.Identity!.Name;
+            var user = db.Users.FirstOrDefault(u => u.Email == email);
 
             if (string.IsNullOrEmpty(showtimeId) || !selectedSeatIds.Any())
             {
@@ -90,7 +97,7 @@ namespace Main.Controllers
             }
 
             var userEmail = db.Users
-                  .Where(u => u.Username == User.Identity.Name)
+                  .Where(u => u.Id == user.Id)
                   .Select(u => u.Email)
                   .FirstOrDefault();
 
@@ -151,8 +158,91 @@ namespace Main.Controllers
 
         public IActionResult Success()
         {
+            string email = User.Identity!.Name;
+            var user = db.Users.FirstOrDefault(u => u.Email == email);
+
             TempData["Success"] = "Your payment was successful and tickets have been booked!";
             SaveBookingFromSession();
+
+            // Get the last ticket for this user (or find by Invoice)
+            var invoice = db.EInvoices
+                .Include(i => i.Tickets)
+                .OrderByDescending(i => i.PurchaseDate)
+                .FirstOrDefault(i => i.Tickets.Any(t => t.UserId == user.Id));
+
+            if (invoice == null)
+                return RedirectToAction("Index", "Home");
+
+            var ticket = db.Tickets
+                .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Movie)
+                .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Hall)
+                        .ThenInclude(h => h.Cinema)
+                .Include(t => t.TicketSeats)
+                    .ThenInclude(ts => ts.Seat)
+                .Include(t => t.TicketFoods)
+                    .ThenInclude(tf => tf.FoodItem)
+                .FirstOrDefault(t => t.UserId == user.Id && t.EInvoiceId == invoice.Id);
+            if (ticket == null)
+                return RedirectToAction("Index", "Home");
+
+            var seatList = string.Join(", ",
+                ticket.TicketSeats.Select(ts => ts.Seat.SeatNumber));
+
+            var foodList = ticket.TicketFoods.Any()
+                ? string.Join(", ",
+                    ticket.TicketFoods.Select(tf => $"{tf.FoodItem.Name} x{tf.Quantity}"))
+                : "None";
+
+            var seatNumbers = string.Join(',', ticket.TicketSeats.Select(ts => ts.Seat.SeatNumber));
+            var qrText = $"Ticket:{ticket.Id};Movie:{ticket.Showtime.Movie.Title};Seats:{seatNumbers};Cinema:{ticket.Showtime.Hall.Cinema.Name};Time:{ticket.Showtime.StartDateTime}";
+
+            byte[] qrBytes;
+            using (var qrGenerator = new QRCodeGenerator())
+            using (var qrData = qrGenerator.CreateQrCode(qrText, QRCodeGenerator.ECCLevel.Q))
+            {
+                var qrCode = new PngByteQRCode(qrData);
+                qrBytes = qrCode.GetGraphic(20);
+            }
+
+            // Generate PDF
+            var pdfBytes = PdfService.GenerateInvoice(invoice, ticket);
+
+            // Send email
+            var mail = new MailMessage();
+            mail.To.Add(email);
+            mail.Subject = "Your E-Receipt";
+
+            mail.Body =
+            $"""
+            Thank you for your purchase!
+
+            Movie: {ticket.Showtime.Movie.Title}
+            Cinema: {ticket.Showtime.Hall.Cinema.Name}
+            Hall: {ticket.Showtime.Hall.Name}
+
+            Showtime: {ticket.Showtime.StartDateTime:ddd, dd MMM yyyy hh:mm tt}
+
+            Seats: {seatList}
+            Food & Beverages: {foodList}
+
+            Invoice Number: {invoice.InvoiceNumber}
+            Total Paid: RM {invoice.TotalAmount:F2}
+
+            Please find your e-receipt attached.
+
+            Enjoy the show!
+            Silver Screen Cinema
+            """;
+
+            mail.Attachments.Add(new Attachment(new MemoryStream(pdfBytes), "receipt.pdf"));
+            mail.Attachments.Add(
+                new Attachment(new MemoryStream(qrBytes), "ticket-qr.png", "image/png")
+            );
+
+            hp.SendEmail(mail);
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -173,14 +263,17 @@ namespace Main.Controllers
                                             .GetObject<List<OrderCartItemVM>>("PendingOrderIds")
                                             ?? new List<OrderCartItemVM>();
 
+            string email = User.Identity!.Name;
+            var user = db.Users.FirstOrDefault(u => u.Email == email);
+
             if (string.IsNullOrEmpty(showtimeId) || !selectedSeatIds.Any())
                 return;
 
-            // 1. Create one ticket
+            // 1. Create ticket
             var ticket = new Ticket
             {
                 Id = Guid.NewGuid().ToString(),
-                UserId = User.Identity?.Name,
+                UserId = user.Id,
                 ShowtimeId = showtimeId,
                 BookingDateTime = DateTime.Now
             };
@@ -210,6 +303,36 @@ namespace Main.Controllers
                 });
             }
 
+            decimal total = 0;
+
+            // Seat total
+            var showtime = db.Showtimes.First(s => s.Id == showtimeId);
+            var seats = db.Seats.Where(s => selectedSeatIds.Contains(s.Id)).ToList();
+
+            foreach (var seat in seats)
+            {
+                total += showtime.TicketPrice * seat.Multiplier;
+            }
+
+            // Food total
+            foreach (var item in pendingOrderIds)
+            {
+                total += item.Price * item.Quantity;
+            }
+
+            // 4. Create E-Invoice
+            var invoice = new EInvoice
+            {
+                Id = Guid.NewGuid().ToString(),
+                InvoiceNumber = $"INV-{DateTime.Now:yyyyMMddHHmmss}",
+                PurchaseDate = DateTime.Now,
+                TotalAmount = total,
+                PaymentMethod = "Credit Card",
+                PaymentStatus = "Paid"
+            };
+            db.EInvoices.Add(invoice);
+            ticket.EInvoiceId = invoice.Id;
+
             db.SaveChanges();
 
             // Clear sessions
@@ -221,6 +344,9 @@ namespace Main.Controllers
         //[Authorize]
         public IActionResult History()
         {
+            string email = User.Identity!.Name;
+            var user = db.Users.FirstOrDefault(u => u.Email == email);
+
             var tickets = db.Tickets
                             .Include(t => t.Showtime)
                                 .ThenInclude(s => s.Movie)
@@ -231,7 +357,7 @@ namespace Main.Controllers
                                 .ThenInclude(ts => ts.Seat)
                             .Include(t => t.TicketFoods)
                                 .ThenInclude(tf => tf.FoodItem)
-                            .Where(t => t.UserId == User.Identity.Name)
+                            .Where(t => t.UserId == user.Id)
                             .OrderByDescending(t => t.BookingDateTime)
                             .Select(t => new BookingHistoryVM
                             {
@@ -279,6 +405,9 @@ namespace Main.Controllers
 
         public IActionResult Detail(string id)
         {
+            string email = User.Identity!.Name;
+            var user = db.Users.FirstOrDefault(u => u.Email == email);
+
             if (string.IsNullOrEmpty(id))
                 return NotFound();
 
@@ -292,9 +421,9 @@ namespace Main.Controllers
                                 .ThenInclude(ts => ts.Seat)
                            .Include(t => t.TicketFoods)
                                .ThenInclude(tf => tf.FoodItem)
-                           .FirstOrDefault(t => t.Id == id && t.UserId == User.Identity.Name);
+                           .FirstOrDefault(t => t.Id == id && t.UserId == user.Id);
 
-            if (ticket == null)
+            if (ticket == null) 
                 return NotFound();
 
             var vm = new BookingHistoryVM
