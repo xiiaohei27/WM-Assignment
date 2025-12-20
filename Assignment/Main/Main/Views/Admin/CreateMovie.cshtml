@@ -1,7 +1,6 @@
 ﻿@model MovieVM
 @{
 	ViewBag.Title = "Create Movie";
-    var genre = ViewBag.Genre as List<String>;
 }
 
 <div class="container mt-4">
@@ -27,7 +26,7 @@
                                 <label asp-for="Genre" class="form-label"></label>
                                 <select asp-for="Genre" class="form-select" id="genreSelect">
                                     <option value="">-- Select Genre --</option>
-                                        @foreach (var gen in genre)
+                                        @foreach (var gen in ViewBag.Genre)
                                         {
                                             <option value = "@gen" >
                                             @gen

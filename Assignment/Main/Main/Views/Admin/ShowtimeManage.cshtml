@@ -1,14 +1,14 @@
-﻿@model List<Movie>
+﻿@model List<Showtime>
 @{
-	ViewBag.Title = "Manage Movie";
+	ViewBag.Title = "Manage Showtime";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Manage Movie</h2>
+        <h2>Manage Movie Showtime</h2>
         <div>
-            <a asp-action="CreateMovie" class="btn btn-success">
-                <i class="bi bi-plus-circle"></i> Add Movie
+            <a asp-action="CreateShowtime" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Add Movie Showtime
             </a>
             <a asp-action="Dashboard" class="btn btn-secondary">Back to Dashboard</a>
         </div>
@@ -19,13 +19,13 @@
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">Genre</label>
-                    <select name="genre" class="form-select" onchange="this.form.submit()">
-                        <option value="">All Genre</option>
-                        @foreach (var gen in ViewBag.Genre)
+                    <label class="form-label">Movie</label>
+                    <select name="movieId" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Movies</option>
+                        @foreach (var movie in ViewBag.Movies)
                         {
-                            <option value="@gen" selected="@(ViewBag.SelectedGenre == gen)">
-                                @gen 
+                            <option value="@movie.Id" selected="@(ViewBag.SelectedMovieId == movie.Id)">
+                                @movie.Title
                             </option>
                         }
                     </select>
@@ -41,7 +41,7 @@
                         <button type="submit" class="btn btn-primary">Filter</button>
                         @if (!string.IsNullOrEmpty(ViewBag.Search) || !string.IsNullOrEmpty(ViewBag.SelectedGenre))
                         {
-                            <a asp-action="MovieManage" class="btn btn-outline-secondary">Clear</a>
+                            <a asp-action="ShowtimeManage" class="btn btn-outline-secondary">Clear</a>
                         }
                     </div>
                 </div>
@@ -50,38 +50,35 @@
     </div>
 
     <div class="card">
-        <div id ="target" class="card-body">
+        <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Image</th>
                             <th>Title</th>
-                            <th>Genre</th>
-                            <th>ReleaseDate</th>
-                            <th>Classification</th>
-                            <th>SpokenLanguage</th>
-                            <th>RunningTime</th>
-                            <th>Director</th>
-                            <th>Cast</th>
+                            <th>HallId</th>
+                            <th>StartDateTime</th>
+                            <th>EndDateTime</th>
+                            <th>TicketPrice</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (!Model.Any())
                         {
                             <tr>
-                                <td colspan="10" class="text-center">No Movie found.</td>
+                                <td colspan="6" class="text-center">No Movie found.</td>
                             </tr>
                         }
                         else
                         {
-                            @foreach (var movie in Model)
+                            @foreach (var showtime in Model)
                             {
                                 <tr>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(movie.Image))
+                                        @if (!string.IsNullOrEmpty(showtime.Movie.Image))
                                         {
-                                            <img src="~/images/@movie.Image" alt="@movie.Title"
+                                            <img src="~/images/@showtime.Movie.Image" alt="@showtime.Movie.Title"
                                                  class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
                                         }
                                         else
@@ -93,28 +90,23 @@
                                         }
                                     </td>
                                     <td>
-                                        <strong>@movie.Title</strong>
-                                        @if (!string.IsNullOrEmpty(movie.Description))
+                                        <strong>@showtime.Movie.Title</strong>
+                                        @if (!string.IsNullOrEmpty(showtime.Movie.Description))
                                         {
                                             <br>
 
-                                            <small class="text-muted">@(movie.Description.Length > 50 ? movie.Description.Substring(0, 50) + "..." : movie.Description)</small>
+                                            <small class="text-muted">@(showtime.Movie.Description.Length > 50 ? showtime.Movie.Description.Substring(0, 50) + "..." : showtime.Movie.Description)</small>
                                         }
                                     </td>
-                                    <td><span class="badge bg-info">@movie.Genre</span></td>
-                                    <td><strong>@movie.ReleaseDate.ToString("dd/MM/yyyy hh:mm:ss tt")</strong></td>
-                                    <td>@movie.Classification</td>
-                                    <td>@movie.SpokenLanguage</td>
-                                    <td>@movie.RunningTime</td>
-                                    <td>@movie.Director</td>
-                                    <td>@movie.Cast</td>
+                                    <td>@showtime.HallId</td>
+                                    <td><strong>@showtime.StartDateTime.ToString("dd/MM/yyyy hh:mm:ss tt")</strong></td>
+                                    <td><strong>@showtime.EndDateTime.ToString("dd/MM/yyyy hh:mm:ss tt")</strong></td>
+                                    <td>@($"RM {showtime.TicketPrice:F2}")</td>
                                     <td>
-                                        <a asp-action="EditMovie" asp-route-id="@movie.Id"
-                                           class="btn btn-sm btn-primary w-70 mb-1">Edit</a>
-                                        <a asp-action="DeleteMovie" asp-route-id="@movie.Id"
-                                           class="btn btn-sm btn-danger w-70 mb-1">Delete</a>
-                                        <a asp-action="ShowtimeManage" asp-route-movieId="@movie.Id"
-                                           class="btn btn-sm btn-warning w-70">Manage Showtime</a>
+                                        <a asp-action="EditShowtime" asp-route-id="@showtime.Movie.Id"
+                                           class="btn btn-sm btn-primary">Edit</a>
+                                        <a asp-action="DeleteShowtime" asp-route-id="@showtime.Movie.Id"
+                                           class="btn btn-sm btn-danger">Delete</a>
                                     </td>
                                 </tr>
                             }
@@ -124,5 +116,4 @@
             </div>
         </div>
     </div>
-    <p class="mt-3 text-muted">Total: @Model.Count movie(s)</p>
 </div>

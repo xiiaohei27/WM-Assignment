@@ -486,6 +486,11 @@ public class AdminController(DB db, Helper hp) : Controller
         ViewBag.SelectedGenre = genre;
         ViewBag.Search = search;
 
+        if (Request.IsAjax())
+        {
+            return PartialView("MovieTable", movie.OrderBy(m => m.Genre).ToList());
+        }
+
         return View(movie.OrderBy(m => m.Genre).ToList());
     }
 
@@ -718,5 +723,31 @@ public class AdminController(DB db, Helper hp) : Controller
 
         TempData["Info"] = "Movie deleted successfully.";
         return RedirectToAction(nameof(MovieManage));
+    }
+
+    // ============================================================================
+    // SHOWTIME MANAGEMENT
+    // ============================================================================
+
+    // GET: Admin/ShowtimeManage
+    public IActionResult ShowtimeManage(string? movieId, string? search)
+    {
+        var showtimes = db.Showtimes
+            .Include(s => s.Movie)
+            .Include(s => s.Hall)
+            .AsQueryable();
+        if (!string.IsNullOrEmpty(movieId))
+        {
+            showtimes = showtimes.Where(s => s.MovieId == movieId);
+        }
+        if (!string.IsNullOrEmpty(search))
+        {
+            showtimes = showtimes.Where(s =>
+                s.Movie.Title.Contains(search));
+        }
+        ViewBag.Movies = db.Movies.OrderBy(m => m.Title).ToList();
+        ViewBag.SelectedMovieId = movieId;
+        ViewBag.Search = search;
+        return View(showtimes.OrderBy(s => s.StartDateTime).ToList());
     }
 }
