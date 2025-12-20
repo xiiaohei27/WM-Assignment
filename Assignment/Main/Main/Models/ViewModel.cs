@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Main.Models;
 
@@ -283,4 +284,19 @@ public class TicketsOverTimeVM
 {
     public string Date { get; set; }
     public int TicketsSold { get; set; }
+}
+
+public class ShowtimeVM 
+{
+    public string? Id { get; set; }
+    [Required]
+    public string MovieId { get; set; }
+    [Required]
+    public string HallId { get; set; }
+    [Required]
+    public DateTime StartDateTime { get; set; }
+    public DateTime EndDateTime { get; set; }
+    [Required]
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TicketPrice { get; set; }
 }

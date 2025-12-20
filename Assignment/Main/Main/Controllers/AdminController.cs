@@ -839,5 +839,114 @@ public class AdminController(DB db, Helper hp) : Controller
         ViewBag.Search = search;
         return View(showtimes.OrderBy(s => s.StartDateTime).ToList());
     }
+
+    // GET: Admin/CreateShowtime
+    public IActionResult CreateShowtime()
+    {
+        ViewBag.Movies = db.Movies.ToList();
+        ViewBag.Halls = db.Halls.OrderBy(h => h.Id).ToList();
+        ViewBag.Cinemas = db.Cinemas.OrderBy(c => c.Id).ToList();
+        return View(new ShowtimeVM());
+    }
+
+    // POST: Admin/CreateShowtime
+    [HttpPost]
+    public IActionResult CreateShowtime(ShowtimeVM vm)
+    {
+        TempData["Errors"] = "POST HIT";
+        if (!ModelState.IsValid)
+        {
+            TempData["Errors"] = string.Join(" | ",
+                ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+
+            ViewBag.Movies = db.Movies.ToList();
+            ViewBag.Halls = db.Halls.ToList();
+            ViewBag.Cinemas = db.Cinemas.ToList();
+            return View(vm);
+        }
+
+        if (ModelState.IsValid)
+        {
+            string newId;
+            var lastShowtime = db.Showtimes.OrderByDescending(s => s.Id).FirstOrDefault();
+            if (lastShowtime == null)
+            {
+                newId = "ST001";
+            }
+            else
+            {
+                int lastNumber = int.Parse(lastShowtime.Id.Substring(2));
+                newId = $"ST{(lastNumber + 1):D3}";
+            }
+            //Calculate EndDateTime based on Movie RunningTime
+            var movie = db.Movies.FirstOrDefault(m => m.Id == vm.MovieId);
+            if (movie == null)
+            {
+                ModelState.AddModelError("MovieId", "Selected movie not found.");
+                ViewBag.Movies = db.Movies.ToList();
+                ViewBag.Halls = db.Halls.OrderBy(h => h.Id).ToList();
+                ViewBag.Cinemas = db.Cinemas.OrderBy(c => c.Id).ToList();
+                return View(vm);
+            }
+
+            vm.EndDateTime = vm.StartDateTime.AddMinutes(movie.RunningTime);
+
+            var showtime = new Showtime
+            {
+                Id = newId,
+                MovieId = vm.MovieId,
+                HallId = vm.HallId,
+                StartDateTime = vm.StartDateTime,
+                EndDateTime = vm.EndDateTime,
+                TicketPrice = vm.TicketPrice
+            };
+
+            db.Showtimes.Add(showtime);
+            db.SaveChanges();
+
+            TempData["Info"] = "Showtime created successfully.";
+            return RedirectToAction(nameof(ShowtimeManage));
+        }
+
+        ViewBag.Movies = db.Movies.ToList();
+        ViewBag.Halls = db.Halls.OrderBy(h => h.Id).ToList();
+        ViewBag.Cinemas = db.Cinemas.OrderBy(c => c.Id).ToList();
+        return View(vm);
+    }
+
+    // GET: Admin/DeleteShowtime
+    public IActionResult DeleteShowtime(string id)
+    {
+        var showtime = db.Showtimes.Include(s => s.Movie).Include(s => s.Hall).FirstOrDefault(s => s.Id == id);
+        if (showtime == null)
+        {
+            TempData["Error"] = "Movie Showtime not found.";
+            return RedirectToAction(nameof(ShowtimeManage));
+        }
+
+        return View(showtime);
+    }
+
+    // POST: Admin/DeleteShowtime/
+    [HttpPost, ActionName("DeleteShowtime")]
+    [ValidateAntiForgeryToken] //prevent CSRF attack (for security)
+    public IActionResult DeleteShowtimeConfirmation(string id)
+    {
+        var s = db.Showtimes.Find(id);
+        if (s == null)
+        {
+            TempData["Error"] = "Movie Showtime not found.";
+            return RedirectToAction(nameof(ShowtimeManage));
+        }
+
+
+        db.Showtimes.Remove(s);
+        db.SaveChanges();
+
+        TempData["Info"] = "Movie Showtime deleted successfully.";
+        return RedirectToAction(nameof(ShowtimeManage));
+    }
 }
 
