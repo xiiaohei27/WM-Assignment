@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Main.Controllers;
 
+[Authorize(Roles = "Member")]
 public class ShowtimeController(DB db) : Controller
 {
-    // Step 1: Select available dates for a movie at a cinema
+    // Step 2: Select available dates for a movie at a cinema
     public IActionResult SelectDate(string movieId)
     {
         var movie = db.Movies.Find(movieId);
@@ -21,7 +23,7 @@ public class ShowtimeController(DB db) : Controller
         return View(dates);
     }
 
-    // Step 2: Select showtime for a movie at a cinema on a specific date
+    // Step 3: Select showtime for a movie at a cinema on a specific date
     public IActionResult SelectShowtime(string movieId, DateTime date)
     {
         var movie = db.Movies.Find(movieId);

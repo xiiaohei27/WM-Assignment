@@ -11,6 +11,7 @@ using static QuestPDF.Helpers.Colors;
 
 namespace Main.Controllers
 {
+    [Authorize(Roles = "Member")]
     public class TicketController(DB db, Helper hp) : Controller
     {
         // Show checkout page

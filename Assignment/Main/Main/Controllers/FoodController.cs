@@ -35,7 +35,9 @@ public class FoodController : Controller
         return View(items.OrderBy(f => f.Name).ToList());
     }
 
+
     // POST: Food/AddToCart
+    [Authorize(Roles = "Member")]
     [HttpPost]
     public IActionResult AddToCart(string foodItemId, int quantity = 1)
     {
@@ -72,6 +74,7 @@ public class FoodController : Controller
     }
 
     // GET: Food/Cart
+    [Authorize(Roles = "Member")]
     public IActionResult Cart()
     {
         var cart = HttpContext.Session.GetObject<List<CartItem>>("FoodCart") ?? new List<CartItem>();
@@ -79,6 +82,7 @@ public class FoodController : Controller
     }
 
     // POST: Food/UpdateCart
+    [Authorize(Roles = "Member")]
     [HttpPost]
     public IActionResult UpdateCart(string foodItemId, int quantity)
     {
@@ -102,6 +106,7 @@ public class FoodController : Controller
     }
 
     // POST: Food/RemoveFromCart
+    [Authorize(Roles = "Member")]
     [HttpPost]
     public IActionResult RemoveFromCart(string foodItemId)
     {
@@ -119,6 +124,7 @@ public class FoodController : Controller
     }
 
     // POST: Food/ClearCart
+    [Authorize(Roles = "Member")]
     [HttpPost]
     public IActionResult ClearCart()
     {
@@ -128,6 +134,7 @@ public class FoodController : Controller
     }
 
     // GET: Food/Checkout
+    [Authorize(Roles = "Member")]
     public IActionResult Checkout()
     {
         var cart = HttpContext.Session.GetObject<List<CartItem>>("FoodCart") ?? new List<CartItem>();
@@ -142,6 +149,7 @@ public class FoodController : Controller
     }
 
     // POST: Food/PlaceOrder
+    [Authorize(Roles = "Member")]
     [HttpPost]
     public IActionResult PlaceOrder(string paymentMethod)
     {
@@ -233,6 +241,7 @@ public class FoodController : Controller
     }
 
     // GET: Food/OrderConfirmation
+    [Authorize(Roles = "Member")]
     public IActionResult OrderConfirmation(string orderId)
     {
         var order = db.FoodOrders
@@ -368,6 +377,7 @@ public class FoodController : Controller
         return View(order);
     }
 
+    [Authorize(Roles = "Member")]
     public IActionResult Select()
     {
         var foodItems = db.FoodItems
@@ -389,6 +399,7 @@ public class FoodController : Controller
         return View(foodItems);
     }
 
+    [Authorize(Roles = "Member")]
     [HttpPost]
     public IActionResult Select(Dictionary<string, int> quantities)
     {

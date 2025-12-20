@@ -1,9 +1,11 @@
 ﻿using Main.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Main.Controllers;
 
+[Authorize(Roles = "Member")]
 public class SeatController(DB db) : Controller
 {
     // Display seats for a specific showtime
