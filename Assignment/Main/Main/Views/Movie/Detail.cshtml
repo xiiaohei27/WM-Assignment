@@ -4,41 +4,50 @@
     ViewBag.Title = "Movie | Detail";
 }
 
-<!-- Movie Poster -->
+<div class="container my-4">
+
+    <!-- Poster + Info -->
+    <div class="row g-4 align-items-start">
+        <!-- Poster -->
+        <div class="col-md-4 text-center">
 <img src="/images/@Model.Image" alt="@Model.Title"
-     style="width:250px; height:auto;" />
+                 class="img-fluid rounded shadow-sm" />
+        </div>
 
-<h2>@Model.Title</h2>
+        <!-- Info -->
+        <div class="col-md-8">
+            <h2 class="fw-bold">@Model.Title</h2>
 
-<!-- Basic info -->
-<p><strong>Genre:</strong> @Model.Genre</p>
-<p><strong>Classification:</strong> @Model.Classification</p>
-<p><strong>Language:</strong> @Model.SpokenLanguage</p>
-<p><strong>Running Time:</strong> @Model.RunningTime minutes</p>
-<p><strong>Release Date:</strong> @Model.ReleaseDate.ToString("dd MMM yyyy")</p>
+            <ul class="list-unstyled mt-3 mb-4">
+                <li><strong>Genre:</strong> @Model.Genre</li>
+                <li><strong>Classification:</strong> @Model.Classification</li>
+                <li><strong>Language:</strong> @Model.SpokenLanguage</li>
+                <li><strong>Running Time:</strong> @Model.RunningTime minutes</li>
+                <li><strong>Release Date:</strong> @Model.ReleaseDate.ToString("dd MMM yyyy")</li>
+                <li><strong>Director:</strong> @Model.Director</li>
+                <li><strong>Cast:</strong> @Model.Cast</li>
+            </ul>
 
-<!-- People -->
-<p><strong>Director:</strong> @Model.Director</p>
-<p><strong>Cast:</strong> @Model.Cast</p>
+            <!-- Back / Next buttons -->
+            <div class="d-flex justify-content-start gap-2">
+                <a asp-controller="Seat" asp-action="SelectSeat" class="btn btn-outline-secondary">← Back</a>
+                <a asp-controller="Cinema" asp-action="SelectCinema" asp-route-movieId="@Model.Id" class="btn btn-primary">Next →</a>
+            </div>
+        </div>
+    </div>
 
-<!-- Description -->
-<h4>Description</h4>
-<p>@Model.Description</p>
-
-<!-- Trailer -->
+    <!-- Trailer at the bottom -->
 @if (!string.IsNullOrEmpty(Model.Trailer))
 {
-    <div>
+        <div class="row mt-4">
+            <div class="col-12 text-center">
         <h4>Trailer</h4>
         <video width="720" height="405" controls>
             <source src="/trailers/@Model.Trailer" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
     </div>
+        </div>
 }
 
-<div class="d-flex justify-content-between mt-4">
-    <a asp-controller="Seat" asp-action="SelectSeat" class="btn btn-outline-secondary">← Back</a>
-    <a asp-controller="Cinema" asp-action="SelectCinema" asp-route-movieId="@Model.Id" class="btn btn-primary">Next →</a>
 </div>
-
