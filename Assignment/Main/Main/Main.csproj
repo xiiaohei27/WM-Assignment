@@ -19,4 +19,8 @@
     <PackageReference Include="Stripe.net" Version="50.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\trailers\" />
+  </ItemGroup>
+
 </Project>
