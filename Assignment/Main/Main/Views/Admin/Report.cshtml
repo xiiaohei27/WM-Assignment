@@ -22,76 +22,95 @@
     <script>
         var chart;
 
+        // Function to load report data and render chart
         function loadReport(action) {
-            $.get('/Admin/' + action, function(data) {
-                // var labels = data.map(d => d.movie);
-                // var dataset = action === 'TicketsSoldReport' ? data.map(d => d.ticketsSold) : data.map(d => d.revenue);
-                // var type = action === 'TicketsSoldReport' ? 'bar' : 'pie';
-                // var label = action === 'TicketsSoldReport' ? 'Tickets Sold' : 'Revenue (RM)';
+            // AJAX request to the server
+            $.ajax({
+                url: '/Admin/' + action,  // 1. URL endpoint for report
+                type: 'GET',              // 2. HTTP GET method
+                dataType: 'json',         // 3. Expect JSON response from server
+                success: function(data) { // 4. Called when server responds successfully
+                    console.log(data);    // Debug: logs the received data to the console
 
-                var labels, dataset, type, label;
+                    // Initialize variables safely
+                    var labels = [];
+                    var dataset = [];
+                    var type = 'bar';
+                    var label = '';
 
-                switch(action) {
-                    case 'TicketsSoldReport':
-                        labels = data.map(d => d.movie);
-                        dataset = data.map(d => d.ticketsSold);
-                        type = 'bar';
-                        label = 'Tickets Sold';
-                        break;
+                    // Determine chart type and data based on selected report
+                    switch(action) {
 
-                    case 'RevenueReport':
-                        labels = data.map(d => d.movie);
-                        dataset = data.map(d => d.revenue);
-                        type = 'pie';
-                        label = 'Revenue (RM)';
-                        break;
+                        case 'TicketsSoldReport':
+                            labels = data.map(d => d.movie);        // Movie titles
+                            dataset = data.map(d => d.ticketsSold); // Tickets sold per movie
+                            type = 'bar';                           // Bar chart
+                            label = 'Tickets Sold';
+                            break;
 
-                    case 'TicketsOverTimeReport':
-                        labels = data.map(d => d.date);
-                        dataset = data.map(d => d.ticketsSold);
-                        type = 'line';
-                        label = 'Tickets Sold';
-                        break;
+                        case 'RevenueReport':
+                            labels = data.map(d => d.movie);        // Movie titles
+                            dataset = data.map(d => d.revenue);     // Revenue per movie
+                            type = 'pie';                           // Pie chart
+                            label = 'Revenue (RM)';
+                            break;
 
-                    case 'RevenueOverTimeReport':
-                        labels = data.map(d => d.date);
-                        dataset = data.map(d => d.revenue);
-                        type = 'line';
-                        label = 'Revenue (RM)';
-                        break;
+                        case 'TicketsOverTimeReport':
+                            labels = data.map(d => d.date);         // Dates
+                            dataset = data.map(d => d.ticketsSold); // Tickets sold on that date
+                            type = 'line';                          // Line chart
+                            label = 'Tickets Sold';
+                            break;
 
-                    case 'SeatTypeUsageReport':
-                        labels = data.map(d => d.seatType);
-                        dataset = data.map(d => d.count);
-                        type = 'pie';
-                        label = 'Seat Usage';
-                        break;
+                        case 'RevenueOverTimeReport':
+                            labels = data.map(d => d.date);         // Dates
+                            dataset = data.map(d => d.revenue);     // Revenue on that date
+                            type = 'line';                          // Line chart
+                            label = 'Revenue (RM)';
+                            break;
 
-                    case 'ShowtimePerformanceReport':
-                        labels = data.map(d => d.showtime);
-                        dataset = data.map(d => d.ticketsSold);
-                        type = 'bar';
-                        label = 'Tickets Sold';
-                        break;
+                        case 'SeatTypeUsageReport':
+                            labels = data.map(d => d.seatType);     // Seat types (Regular, VIP, etc.)
+                            dataset = data.map(d => d.count);       // Count of each seat type
+                            type = 'pie';                           // Pie chart
+                            label = 'Seat Usage';
+                            break;
+
+                        case 'ShowtimePerformanceReport':
+                            labels = data.map(d => d.showtime);     // Showtime identifiers
+                            dataset = data.map(d => d.ticketsSold); // Tickets sold per showtime
+                            type = 'bar';                           // Bar chart
+                            label = 'Tickets Sold';
+                            break;
+                    }
+
+                    // Destroy the previous chart instance if it exists
+                    if(chart) chart.destroy();
+
+                    // Create new chart using Chart.js
+                    chart = new Chart(document.getElementById('chart').getContext('2d'), {
+                        type: type,           // Chart type determined above
+                        data: {
+                            labels: labels,   // X-axis labels
+                            datasets: [{
+                                label: label, // Dataset label
+                                data: dataset  // Y-axis values
+                            }]
+                        },
+                        options: { responsive: true } // Make chart responsive
+                    });
+                },
+                error: function(xhr, status, error) { // Called if AJAX fails
+                    console.error('AJAX Error:', error); // Log error to console
                 }
-
-                // Destroy old chart if exists
-                if(chart) chart.destroy();
-
-                // Create new chart
-                chart = new Chart(document.getElementById('chart').getContext('2d'), {
-                    type: type,
-                    data: {
-                        labels: labels,
-                        datasets: [{ label: label, data: dataset }]
-                    },
-                    options: { responsive: true }
-                });
             });
         }
 
+        // Initialize page
         $(document).ready(function() {
             loadReport('TicketsSoldReport'); // Load initial chart
+
+            // Change chart when user selects a different report
             $('#reportSelector').change(function() {
                 loadReport($(this).val()); // Switch chart dynamically
             });

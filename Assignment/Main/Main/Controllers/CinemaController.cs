@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Main.Controllers;
 
+[Authorize(Roles = "Member")]
 public class CinemaController(DB db) : Controller
 {
     // Step 1: List cinemas for a movie

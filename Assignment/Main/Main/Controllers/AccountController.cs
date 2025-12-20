@@ -9,6 +9,11 @@ public class AccountController(DB db, Helper hp, IEmailService emailService) : C
     // GET: Account/Login
     public IActionResult Login()
     {
+        if (User.Identity.IsAuthenticated)
+        {
+            // Redirect to home/dashboard if already logged in
+            return RedirectToAction("Index", "Home");
+        }
         return View();
     }
 

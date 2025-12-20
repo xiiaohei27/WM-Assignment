@@ -1,4 +1,5 @@
 ﻿using Main.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Main.Controllers;
@@ -19,6 +20,7 @@ public class MovieController(DB db) : Controller
     }
 
     // GET: Movie/Detail/(MovieId)
+    [Authorize(Roles = "Member")]
     public IActionResult Detail(string id)
     {
         var movie = db.Movies.Find(id); // Fetch movie by id.
