@@ -5,7 +5,6 @@
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Manage Movie</h2>
         <div>
             <a asp-action="CreateMovie" class="btn btn-success">
                 <i class="bi bi-plus-circle"></i> Add Movie
@@ -17,10 +16,10 @@
     <!-- Filter Form -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="get" class="row g-3">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-4">
                     <label class="form-label">Genre</label>
-                    <select name="genre" class="form-select" onchange="this.form.submit()">
+                    <select id="genreSelector"class="form-select">
                         <option value="">All Genre</option>
                         @foreach (var gen in ViewBag.Genre)
                         {
@@ -32,27 +31,24 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Search</label>
-                    <input type="text" name="search" class="form-control"
+                    <input type="text" id="searchInput" class="form-control"
                            placeholder="Search by name..." value="@ViewBag.Search">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                        @if (!string.IsNullOrEmpty(ViewBag.Search) || !string.IsNullOrEmpty(ViewBag.SelectedGenre))
-                        {
-                            <a asp-action="MovieManage" class="btn btn-outline-secondary">Clear</a>
-                        }
+                    <div class="d-flex gap-2">
+                    <button type="button" id="filterBtn" class="btn btn-primary">Filter</button>
+                    <button type="button" id="clearBtn" class="btn btn-outline-secondary">Clear</button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
     <div class="card">
         <div id ="target" class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table id="moviesTable" class="table table-hover">
                     <thead>
                         <tr>
                             <th>Image</th>
@@ -126,3 +122,63 @@
     </div>
     <p class="mt-3 text-muted">Total: @Model.Count movie(s)</p>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+        $(document).ready(function() {
+
+        function loadMovies() {
+            var genre = $('#genreSelector').val();
+            var search = $('#searchInput').val();
+
+            $.get('/Admin/GetMoviesByFilter', { genre: genre, search: search }, function(data) {
+                var tbody = $('#moviesTable tbody');
+                tbody.empty();
+
+                if (!data || data.length === 0) {
+                    tbody.append('<tr><td colspan="10" class="text-center">No Movie found.</td></tr>');
+                    return;
+                }
+
+                data.forEach(function(movie) {
+                    var imageHtml = movie.image
+                        ? '<img src="/images/' + movie.image + '" class="rounded" style="width:50px;height:50px;object-fit:cover;">'
+                        : '<div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width:50px;height:50px;"><span class="text-white">N/A</span></div>';
+
+                    var description = movie.description
+                        ? (movie.description.length > 50 ? movie.description.substring(0,50) + "..." : movie.description)
+                        : "";
+
+                    tbody.append('<tr>' +
+                        '<td>' + imageHtml + '</td>' +
+                        '<td><strong>' + movie.title + '</strong><br><small class="text-muted">' + description + '</small></td>' +
+                        '<td><span class="badge bg-info">' + movie.genre + '</span></td>' +
+                        '<td><strong>' + new Date(movie.releaseDate).toLocaleString() + '</strong></td>' +
+                        '<td>' + movie.classification + '</td>' +
+                        '<td>' + movie.spokenLanguage + '</td>' +
+                        '<td>' + (movie.runningTime || '') + '</td>' +
+                        '<td>' + movie.director + '</td>' +
+                        '<td>' + movie.cast + '</td>' +
+                        '<td>' +
+                            '<a href="/Admin/EditMovie/' + movie.id + '" class="btn btn-sm btn-primary w-70 mb-1">Edit</a>' +
+                            '<a href="/Admin/DeleteMovie/' + movie.id + '" class="btn btn-sm btn-danger w-70 mb-1">Delete</a>' +
+                            '<a href="/Admin/ShowtimeManage?movieId=' + movie.id + '" class="btn btn-sm btn-warning w-70">Manage Showtime</a>' +
+                        '</td>' +
+                    '</tr>');
+                });
+            });
+        }
+
+        // Real-time events
+        $('#genreSelector').on('change', loadMovies);  // update when genre changes
+        $('#searchInput').on('input', loadMovies);     // update as user types
+
+        // Keep buttons in case you want them
+        $('#filterBtn').click(loadMovies);
+        $('#clearBtn').click(function() {
+            $('#genreSelector').val('');
+            $('#searchInput').val('');
+            loadMovies();
+        });
+    });
+</script>

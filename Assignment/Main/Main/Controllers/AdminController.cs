@@ -486,12 +486,40 @@ public class AdminController(DB db, Helper hp) : Controller
         ViewBag.SelectedGenre = genre;
         ViewBag.Search = search;
 
-        if (Request.IsAjax())
-        {
-            return PartialView("MovieTable", movie.OrderBy(m => m.Genre).ToList());
-        }
-
         return View(movie.OrderBy(m => m.Genre).ToList());
+    }
+
+    // GET: Admin/GetMoviesByFilter
+    [HttpGet]
+    public JsonResult GetMoviesByFilter(string? genre, string? search)
+    {
+        var movies = db.Movies.AsQueryable();
+
+        if (!string.IsNullOrEmpty(genre))
+            movies = movies.Where(m => m.Genre == genre);
+
+        if (!string.IsNullOrEmpty(search))
+            movies = movies.Where(m => m.Title.Contains(search));
+
+        var result = movies
+            .OrderBy(m => m.Genre)
+            .Select(m => new
+            {
+                Id = m.Id,
+                Title = m.Title,
+                Genre = m.Genre,
+                ReleaseDate = m.ReleaseDate.ToString("yyyy-MM-ddTHH:mm:ss"),
+                Classification = m.Classification,
+                SpokenLanguage = m.SpokenLanguage,
+                RunningTime = m.RunningTime.ToString() ?? "", // if nullable
+                Director = m.Director,
+                Cast = m.Cast,
+                Image = m.Image,
+                Description = m.Description
+            })
+            .ToList();
+
+        return Json(result);
     }
 
     //GET: Admin/CreateMovie
@@ -853,7 +881,6 @@ public class AdminController(DB db, Helper hp) : Controller
     [HttpPost]
     public IActionResult CreateShowtime(ShowtimeVM vm)
     {
-        TempData["Errors"] = "POST HIT";
         if (!ModelState.IsValid)
         {
             TempData["Errors"] = string.Join(" | ",
@@ -947,6 +974,71 @@ public class AdminController(DB db, Helper hp) : Controller
 
         TempData["Info"] = "Movie Showtime deleted successfully.";
         return RedirectToAction(nameof(ShowtimeManage));
+    }
+
+    // GET: Admin/EditShowtime
+    public IActionResult EditShowtime(string id)
+    {
+        var s = db.Showtimes.Find(id);
+        if (s == null)
+        {
+            TempData["Error"] = "Movie Showtime not found.";
+            return RedirectToAction(nameof(ShowtimeManage));
+        }
+
+        var vm = new ShowtimeVM
+        {
+            Id = s.Id,
+            MovieId = s.MovieId,
+            HallId = s.HallId,
+            StartDateTime = s.StartDateTime,
+            EndDateTime = s.EndDateTime,
+            TicketPrice = s.TicketPrice
+        };
+
+        ViewBag.Movies = db.Movies.ToList();
+        ViewBag.Halls = db.Halls.OrderBy(h => h.Id).ToList();
+        ViewBag.Cinemas = db.Cinemas.OrderBy(c => c.Id).ToList();
+        return View(vm);
+    }
+
+    //POST: Admin/EditShowtime
+    [HttpPost]
+    public IActionResult EditShowtime(ShowtimeVM vm)
+    {
+        var s = db.Showtimes.Find(vm.Id);
+
+        if (s == null)
+        {
+            TempData["Error"] = "Movie not found.";
+            return RedirectToAction(nameof(ShowtimeManage));
+        }
+
+        if (ModelState.IsValid)
+        {
+            var movie = db.Movies.FirstOrDefault(m => m.Id == vm.MovieId);
+            if (movie == null)
+            {
+                ModelState.AddModelError("MovieId", "Selected movie not found.");
+                ViewBag.Movies = db.Movies.ToList();
+                ViewBag.Halls = db.Halls.OrderBy(h => h.Id).ToList();
+                ViewBag.Cinemas = db.Cinemas.OrderBy(c => c.Id).ToList();
+                return View(vm);
+            }
+            s.HallId = vm.HallId;
+            s.StartDateTime = vm.StartDateTime;
+            s.EndDateTime = s.StartDateTime.AddMinutes(movie.RunningTime);
+            s.TicketPrice = vm.TicketPrice;
+
+            db.SaveChanges();
+
+            TempData["Info"] = "Movie Showtime updated successfully";
+            return RedirectToAction(nameof(ShowtimeManage));
+        }
+        ViewBag.Movies = db.Movies.ToList();
+        ViewBag.Halls = db.Halls.OrderBy(h => h.Id).ToList();
+        ViewBag.Cinemas = db.Cinemas.OrderBy(c => c.Id).ToList();
+        return View(vm);
     }
 }
 
