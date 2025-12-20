@@ -1,12 +1,14 @@
 ﻿@model IEnumerable<Movie>
 
-@foreach (var movie in Model)
-{
-    <div>
-        <a asp-action="Detail" asp-controller="Movie" asp-route-id="@movie.Id">
-            <img src="/images/@movie.Image" alt="@movie.Title" style="width:150px; height:auto;" />
-        </a>
-        <h3>@movie.Title</h3>
-        <p>@movie.Genre</p>
-    </div>
-}
+<div class="d-flex flex-wrap justify-content-start" style="gap:5px;">
+    @foreach (var movie in Model)
+    {
+        <div style="width: calc(25% - 5px); text-align:center;">
+            <a asp-action="Detail" asp-controller="Movie" asp-route-id="@movie.Id" style="display:inline-block;">
+                <img src="/images/@movie.Image" alt="@movie.Title" class="movie-poster-small" />
+            </a>
+            <h6 class="mt-2 mb-0">@movie.Title</h6>
+            <p class="text-muted mb-0">@movie.Genre</p>
+        </div>
+    }
+</div>

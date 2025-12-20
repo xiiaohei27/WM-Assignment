@@ -4,37 +4,78 @@
     ViewBag.Title = "Home | Index";
 }
 
-<h2>Featured Movie</h2>
-<div class="featured-movie">
-    <a asp-action="Detail" asp-controller="Movie" asp-route-id="@ViewBag.Featured.Id">
-        <img src="/images/@ViewBag.Featured.Image" alt="@ViewBag.Featured.Title" style="width:150px; height:auto;" />
-    </a>
-    <h3>@ViewBag.Featured.Title</h3>
-    <p>@ViewBag.Featured.Genre</p>
-</div>
+<div class="container mt-4">
 
-<h2>Now Showing</h2>
-<div class="movies-grid">
-    @foreach (var movie in Model)
-    {
-        <div class="movie-card">
-            <a asp-action="Detail" asp-controller="Movie" asp-route-id="@movie.Id">
-                <img src="/images/@movie.Image" alt="@movie.Title" style="width:150px; height:auto;" />
-            </a>
-            <h3>@movie.Title</h3>
-            <p>@movie.Genre</p>
+    <!-- Featured Movie -->
+    <h2>Featured Movie</h2>
+    <div class="featured-movie mb-4">
+        <a asp-action="Detail" asp-controller="Movie" asp-route-id="@ViewBag.Featured.Id">
+            <img src="/images/@ViewBag.Featured.Image" alt="@ViewBag.Featured.Title" class="movie-poster"/>
+        </a>
+        <h3>@ViewBag.Featured.Title</h3>
+        <p>@ViewBag.Featured.Genre</p>
+    </div>
+
+    <h2>Now Showing</h2>
+
+    <div class="simple-slider">
+        <button id="prevBtn">‹</button>
+
+        <div class="slider-window">
+            <div class="slider-track">
+                @foreach (var movie in Model)
+                {
+                    <div class="slide">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">
+                            <img src="/images/@movie.Image" alt="@movie.Title" class="movie-poster">
+                        </a>
+                        <h3>@movie.Title</h3>
+                        <p>@movie.Genre</p>
+                    </div>
+                }
+            </div>
         </div>
-    }
-</div>
 
-@* Food & Beverage Section *@
-<div style="margin-top: 60px; padding: 30px 0; background-color: #f8f9fa;">
-    <h2>Food & Beverage</h2>
-    <p>Enhance your movie experience with our delicious snacks and beverages!</p>
+        <button id="nextBtn">›</button>
+    </div>
 
-    @await Html.PartialAsync("~/Views/Food/_FeaturedMenu.cshtml")
 
-    <div class="text-center mt-4">
-        <a asp-controller="Food" asp-action="Index" class="btn btn-primary btn-lg">View Full Menu →</a>
+    <!-- Food & Beverage Section -->
+    <div style="margin-top: 60px; padding: 30px 0; background-color: #f8f9fa;">
+        <h2>Food & Beverage</h2>
+        <p>Enhance your movie experience with our delicious snacks and beverages!</p>
+
+        @await Html.PartialAsync("~/Views/Food/_FeaturedMenu.cshtml")
+
+        <div class="text-center mt-4">
+            <a asp-controller="Food" asp-action="Index" class="btn btn-primary btn-lg">View Full Menu →</a>
+        </div>
     </div>
 </div>
+
+@section Scripts{
+    <script>
+        const track = document.querySelector('.slider-track');
+        const slides = document.querySelectorAll('.slide');
+        const prev = document.getElementById('prevBtn');
+        const next = document.getElementById('nextBtn');
+
+        const slideWidth = 320;
+        const visibleSlides = 3;
+        let index = 0;
+
+        function updateSlider() {
+            track.style.transform = `translateX(-${index * slideWidth}px)`;
+        }
+
+        prev.onclick = () => {
+            if (index > 0) index--;
+            updateSlider();
+        };
+
+        next.onclick = () => {
+            if (index < slides.length - visibleSlides) index++;
+            updateSlider();
+        };
+    </script>
+}

@@ -6,20 +6,25 @@
         <p>Movie not found</p>
         return;
     }
-    ViewBag.Title = "Select Cinema for " + movie.Title;
+    ViewBag.Title = "1. Select Cinema";
 }
 
-@foreach (var cinema in Model)
-{
-    <div>
-        <a asp-action="SelectDate" asp-controller="Showtime"
-           asp-route-movieId="@movie.Id"
-           asp-route-cinemaId="@cinema.Id">
-            @cinema.Name
-        </a>
+<div class="container my-4">
+    <h2 class="text-center mb-4">Select Cinema for "@movie.Title"</h2>
+
+    <div class="d-flex flex-column align-items-center gap-3">
+        @foreach (var cinema in Model)
+        {
+            <a asp-action="SelectDate" asp-controller="Showtime"
+               asp-route-movieId="@movie.Id"
+               asp-route-cinemaId="@cinema.Id"
+               class="btn btn-outline-primary btn-lg w-50 text-center">
+                @cinema.Name
+            </a>
+        }
     </div>
-}
 
-<div class="d-flex justify-content-between mt-4">
-    <a asp-controller="Movie" asp-action="Detail" asp-route-Id="@movie.Id" class="btn btn-outline-secondary">← Back</a>
+    <div class="d-flex justify-content-between mt-4">
+        <a asp-controller="Movie" asp-action="Detail" asp-route-Id="@movie.Id" class="btn btn-outline-secondary">← Back</a>
+    </div>
 </div>

@@ -6,48 +6,59 @@
 
 <div class="container my-4">
 
-    <!-- Poster + Info -->
-    <div class="row g-4 align-items-start">
-        <!-- Poster -->
-        <div class="col-md-4 text-center">
-<img src="/images/@Model.Image" alt="@Model.Title"
-                 class="img-fluid rounded shadow-sm" />
-        </div>
+    <!-- Poster + Info (centered) -->
+    <div class="d-flex justify-content-center">
+        <div class="d-flex gap-4 align-items-start" style="max-width: 900px;">
+            <!-- Poster -->
+            <div class="text-center">
+                <img src="/images/@Model.Image" alt="@Model.Title"
+                     class="img-fluid rounded shadow-sm" style="max-width:375px;"/>
+            </div>
 
-        <!-- Info -->
-        <div class="col-md-8">
-            <h2 class="fw-bold">@Model.Title</h2>
+            <!-- Info -->
+            <div>
+                <h2 class="fw-bold text-center text-md-start">@Model.Title</h2>
 
-            <ul class="list-unstyled mt-3 mb-4">
-                <li><strong>Genre:</strong> @Model.Genre</li>
-                <li><strong>Classification:</strong> @Model.Classification</li>
-                <li><strong>Language:</strong> @Model.SpokenLanguage</li>
-                <li><strong>Running Time:</strong> @Model.RunningTime minutes</li>
-                <li><strong>Release Date:</strong> @Model.ReleaseDate.ToString("dd MMM yyyy")</li>
-                <li><strong>Director:</strong> @Model.Director</li>
-                <li><strong>Cast:</strong> @Model.Cast</li>
-            </ul>
+                <!-- Basic info -->
+                <ul class="list-unstyled mt-3 mb-3">
+                    <li><strong>Genre:</strong> @Model.Genre</li>
+                    <li><strong>Classification:</strong> @Model.Classification</li>
+                    <li><strong>Language:</strong> @Model.SpokenLanguage</li>
+                    <li><strong>Running Time:</strong> @Model.RunningTime minutes</li>
+                    <li><strong>Release Date:</strong> @Model.ReleaseDate.ToString("dd MMM yyyy")</li>
+                </ul>
 
-            <!-- Back / Next buttons -->
-            <div class="d-flex justify-content-start gap-2">
-                <a asp-controller="Seat" asp-action="SelectSeat" class="btn btn-outline-secondary">← Back</a>
-                <a asp-controller="Cinema" asp-action="SelectCinema" asp-route-movieId="@Model.Id" class="btn btn-primary">Next →</a>
+                <!-- People -->
+                <ul class="list-unstyled mb-3">
+                    <li><strong>Director:</strong> @Model.Director</li>
+                    <li><strong>Cast:</strong> @Model.Cast</li>
+                </ul>
+
+                <!-- Description -->
+                <h4>Description</h4>
+                <p>@Model.Description</p>
             </div>
         </div>
     </div>
 
     <!-- Trailer at the bottom -->
-@if (!string.IsNullOrEmpty(Model.Trailer))
-{
-        <div class="row mt-4">
-            <div class="col-12 text-center">
-        <h4>Trailer</h4>
-        <video width="720" height="405" controls>
-            <source src="/trailers/@Model.Trailer" type="video/mp4" />
-            Your browser does not support the video tag.
-        </video>
-    </div>
+    @if (!string.IsNullOrEmpty(Model.Trailer))
+    {
+        <div class="row mt-4 justify-content-center">
+            <div class="col-auto text-center">
+                <h4>Trailer</h4>
+                <video width="800" height="450" controls class="rounded shadow-sm border">
+                    <source src="/trailers/@Model.Trailer" type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
+            </div>
         </div>
-}
+    }
+
+    <!-- Back / Next buttons -->
+    <div class="d-flex justify-content-between mt-4">
+        <a asp-controller="Seat" asp-action="SelectSeat" class="btn btn-outline-secondary">← Back</a>
+        <a asp-controller="Cinema" asp-action="SelectCinema" asp-route-movieId="@Model.Id" class="btn btn-primary">Next →</a>
+    </div>
 
 </div>

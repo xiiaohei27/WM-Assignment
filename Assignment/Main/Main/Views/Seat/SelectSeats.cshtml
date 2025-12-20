@@ -2,43 +2,77 @@
 @{
     var showtime = ViewBag.Showtime as Showtime;
     var bookedSeats = ViewBag.BookedSeats as List<string>;
-    ViewBag.Title = "Select Seats for " + showtime.Movie.Title;
+    ViewBag.Title = "4. Select Seats";
 
     var seatRows = Model
     // Sort by row letter (A, B, C...)
     .OrderBy(s => s.SeatNumber[0])
-    // Sort by seat number (001, 002, 010 → 1, 2, 10)
-    .ThenBy(s => int.Parse(s.SeatNumber.Substring(1)))
+    // Sort by first number in seat (works for "1" or "1-H2")
+    .ThenBy(s =>
+    {
+        var numPart = s.SeatNumber.Split('-')[0].Substring(1);  // get the number after the row letter
+        return int.TryParse(numPart, out int n) ? n : 0;        // try to convert the string to integer
+    })
     // Group seats by row letter
     .GroupBy(s => s.SeatNumber[0].ToString())
     .ToList();
 }
 
-<p>@showtime.Hall.Cinema.Name - @showtime.Hall.Name</p>
-<p>@showtime.StartDateTime.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
+<div class="container my-4">
+    <h2 class="text-center mb-4">Select Seats for <strong>@showtime.Movie.Title</strong></h2>
 
-<form method="post" asp-controller="Seat" asp-action="SelectSeats">
-    <input type="hidden" name="showtimeId" value="@showtime.Id" />
+    <p class="text-center fw-bold">@showtime.Hall.Cinema.Name - @showtime.Hall.Name</p>
+    <p class="text-center">@showtime.StartDateTime.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
 
-    <div style="display:flex; flex-direction:column; gap:5px;">
-        @foreach (var row in seatRows)
-        {
-            <div style="display:flex; gap:5px;">
-                @foreach (var seat in row)
-                {
-                    var isBooked = bookedSeats.Contains(seat.Id);
-                    <div>
-                        <input type="checkbox" name="selectedSeatIds" value="@seat.Id" @(isBooked ? "disabled" : "") />
-                        <label>@seat.SeatNumber</label>
-                    </div>
-                }
+    <form method="post" asp-controller="Seat" asp-action="SelectSeats">
+        <input type="hidden" name="showtimeId" value="@showtime.Id" />
+
+        <div class="d-flex justify-content-center">
+            <div class="cinema-screen-wrapper text-center">
+                <div class="screen mb-3">SCREEN</div>
+
+                <div class="seat-container">
+                    @foreach (var row in seatRows)
+                    {
+                        <div class="seat-row justify-content-center mb-2">
+                            @foreach (var seat in row)
+                            {
+                                var isBooked = bookedSeats.Contains(seat.Id);
+                                var isUnavailable = seat.Status != "Available";
+                                var seatClass = "seat";
+                                if (isBooked) seatClass += " booked";
+                                if (isUnavailable) seatClass += " unavailable";
+                                if (seat.SeatType == "Couple") seatClass += " couple";
+
+                                <div class="@seatClass" data-seat-id="@seat.Id">
+                                    <input type="checkbox" name="selectedSeatIds" value="@seat.Id" @(isBooked || isUnavailable ? "disabled" : "") />
+                                    <span>@seat.SeatNumber</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
             </div>
-        }
-    </div>
+        </div>
 
-    <div class="d-flex justify-content-between mt-4">
-        <a asp-controller="Showtime" asp-action="SelectShowtime" asp-route-movieId="@showtime.Movie.Id"
-           asp-route-date="@showtime.StartDateTime.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary">← Back</a>
-        <button type="submit" class="btn btn-primary">Next →</button>
-    </div>
-</form>
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-controller="Showtime" asp-action="SelectShowtime" asp-route-movieId="@showtime.Movie.Id"
+               asp-route-date="@showtime.StartDateTime.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary">← Back</a>
+            <button type="submit" class="btn btn-primary">Next →</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.seat').forEach(function (seatDiv) {
+            const checkbox = seatDiv.querySelector('input[type="checkbox"]');
+            if (checkbox && !checkbox.disabled) {
+                seatDiv.addEventListener('click', function () {
+                    checkbox.checked = !checkbox.checked;
+                    seatDiv.classList.toggle('selected', checkbox.checked);
+                });
+            }
+        });
+    });
+</script>

@@ -1,9 +1,10 @@
 ﻿@model List<FoodItem>
 
 @{
-    ViewBag.Title = "Select Food & Beverages";
+    ViewBag.Title = "5. Select Food & Beverages";
     var categories = ViewBag.Categories as List<FoodCategory>;
     var showtimeId = Context.Session.GetString("PendingTicketShowtimeId");
+    var selectedCategoryId = ViewBag.SelectedCategoryId as string;
 }
 
 <div class="container mt-4">
@@ -11,17 +12,6 @@
     <p class="text-muted">
         Optional – you may skip this step if you don’t want food.
     </p>
-
-    <!-- Categories (optional filter) -->
-    <div class="mb-4">
-        <a asp-action="Select" class="btn btn-outline-primary">All</a>
-        @foreach (var category in categories)
-        {
-            <a asp-action="Select" asp-route-categoryId="@category.Id" class="btn @(ViewBag.SelectedCategoryId == category.Id ? "btn-primary" : "btn-outline-secondary")">
-                @category.Name
-            </a>
-        }
-    </div>
 
     <!-- Food Items -->
     @if (!Model.Any())

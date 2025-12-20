@@ -256,3 +256,173 @@ label > * {
     min-width: 30px;
     text-align: center;
 }
+
+/* Seat ----------------------------------------------------------------------- */
+
+.seat-container {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+}
+
+.seat-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 40px; /* each column = width of a regular seat */
+    gap: 8px;
+}
+
+.seat {
+    width: 100%;
+    height: 40px;
+    border-radius: 6px;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.seat.couple {
+    grid-column: span 2; /* takes 2 columns, same as 2 regular seats */
+}
+
+.seat input[type="checkbox"] {
+    display: none;
+}
+
+.seat span {
+    pointer-events: none;
+}
+
+.seat:hover {
+    background-color: #a0c4ff;
+}
+
+.seat.selected {
+    background-color: #00b894;
+    color: white;
+}
+
+.seat.booked {
+    background-color: #f1c40f;
+    color: #2d3436;
+    cursor: not-allowed;
+}
+
+.seat.unavailable {
+    background-color: #d63031;
+    color: white;
+    cursor: not-allowed;
+}
+
+.screen {
+    height: 40px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    text-transform: uppercase;
+    width: 100%;
+    /* Correct gradient */
+    background: linear-gradient(to bottom, #2d3436, #636e72); /* dark gray → lighter gray */
+}
+
+.cinema-screen-wrapper {
+    display: inline-block; /* shrink wrapper to fit seats width */
+    padding: 10px; /* optional spacing around layout */
+}
+
+/* Movie ----------------------------------------------------------------------- */
+
+/* Shared poster size for ALL movie posters */
+.movie-poster {
+    width: 300px;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.movie-poster-small {
+    width: 100%;
+    max-width: 180px; /* adjust size as needed */
+    height: auto;
+    display: block;
+    margin: 0 auto; /* centers the poster in the column */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Featured Movie */
+.featured-movie {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.featured-movie h3 {
+    margin-top: 15px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.featured-movie p {
+    color: #6c757d;
+    text-align: center;
+}
+
+/* ================= NOW SHOWING (3-ITEM SLIDER) ================= */
+
+.simple-slider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+/* Window that shows 3 posters */
+.slider-window {
+    width: 910px; /* 3 × 300px + 10px()*/
+    overflow: hidden;
+}
+
+/* Track holding all slides */
+.slider-track {
+    display: flex;
+    transition: transform 0.4s ease;
+}
+
+/* Each movie */
+.slide {
+    width: 305px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.slide h3 {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.slide p {
+    color: #6c757d;
+}
+
+/* BIG ARROWS */
+.simple-slider button {
+    font-size: 64px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+}

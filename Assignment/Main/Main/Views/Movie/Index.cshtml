@@ -4,21 +4,24 @@
     ViewBag.Title = "Movie | Index";
 }
 
-<p>
-    <a data-ajax="true"
-       data-ajax-update="#target"
-       data-ajax-loading="#loader"
-       href="?">All</a>
-
-    @foreach (var g in ViewBag.Genres)
-    {
-        <text>|</text>
-        <a data-ajax="true"
+<div class="container my-4">
+    <p class="mb-3">
+        <a class="btn btn-outline-primary btn-sm me-1 mb-1"
+            data-ajax="true"
            data-ajax-update="#target"
            data-ajax-loading="#loader"
-           href="?genre=@g">@g</a>
-    }
-</p>
+           href="?">All</a>
+
+        @foreach (var g in ViewBag.Genres)
+        {
+            <a class="btn btn-outline-primary btn-sm me-1 mb-1"
+               data-ajax="true"
+               data-ajax-update="#target"
+               data-ajax-loading="#loader"
+               href="?genre=@g">@g</a>
+        }
+    </p>
+</div>
 
 <div id="target">
     <partial name="_Display">
