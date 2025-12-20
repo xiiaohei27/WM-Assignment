@@ -109,6 +109,10 @@
                     <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">
                         <i class="bi bi-speedometer2"></i> Admin
                     </a>
+
+                    <a class="nav-link" asp-controller="Admin" asp-action="Report">
+                        <i class="bi bi-speedometer2"></i> Report
+                    </a>
                 }
 
                 @* Member Menu *@
@@ -240,5 +244,6 @@
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
     @RenderSection("foot", false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -1,0 +1,100 @@
+﻿@{
+    ViewBag.Title = "Report";
+}
+
+<select id="reportSelector">
+    <option value="TicketsSoldReport">Tickets Sold per Movie</option>
+    <option value="RevenueReport">Revenue Earned per Movie</option>
+    <option value="TicketsOverTimeReport">Tickets Sold Over Time</option>
+    <option value="RevenueOverTimeReport">Revenue Earned Over Time</option>
+    <option value="SeatTypeUsageReport">Seat Type Usage</option>
+    <option value="ShowtimePerformanceReport">Showtime Performance</option>
+</select>
+
+<div style="width: 50%; max-width: 600px; margin: auto;">
+    <canvas id="chart"></canvas>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        var chart;
+
+        function loadReport(action) {
+            $.get('/Admin/' + action, function(data) {
+                // var labels = data.map(d => d.movie);
+                // var dataset = action === 'TicketsSoldReport' ? data.map(d => d.ticketsSold) : data.map(d => d.revenue);
+                // var type = action === 'TicketsSoldReport' ? 'bar' : 'pie';
+                // var label = action === 'TicketsSoldReport' ? 'Tickets Sold' : 'Revenue (RM)';
+
+                var labels, dataset, type, label;
+
+                switch(action) {
+                    case 'TicketsSoldReport':
+                        labels = data.map(d => d.movie);
+                        dataset = data.map(d => d.ticketsSold);
+                        type = 'bar';
+                        label = 'Tickets Sold';
+                        break;
+
+                    case 'RevenueReport':
+                        labels = data.map(d => d.movie);
+                        dataset = data.map(d => d.revenue);
+                        type = 'pie';
+                        label = 'Revenue (RM)';
+                        break;
+
+                    case 'TicketsOverTimeReport':
+                        labels = data.map(d => d.date);
+                        dataset = data.map(d => d.ticketsSold);
+                        type = 'line';
+                        label = 'Tickets Sold';
+                        break;
+
+                    case 'RevenueOverTimeReport':
+                        labels = data.map(d => d.date);
+                        dataset = data.map(d => d.revenue);
+                        type = 'line';
+                        label = 'Revenue (RM)';
+                        break;
+
+                    case 'SeatTypeUsageReport':
+                        labels = data.map(d => d.seatType);
+                        dataset = data.map(d => d.count);
+                        type = 'pie';
+                        label = 'Seat Usage';
+                        break;
+
+                    case 'ShowtimePerformanceReport':
+                        labels = data.map(d => d.showtime);
+                        dataset = data.map(d => d.ticketsSold);
+                        type = 'bar';
+                        label = 'Tickets Sold';
+                        break;
+                }
+
+                // Destroy old chart if exists
+                if(chart) chart.destroy();
+
+                // Create new chart
+                chart = new Chart(document.getElementById('chart').getContext('2d'), {
+                    type: type,
+                    data: {
+                        labels: labels,
+                        datasets: [{ label: label, data: dataset }]
+                    },
+                    options: { responsive: true }
+                });
+            });
+        }
+
+        $(document).ready(function() {
+            loadReport('TicketsSoldReport'); // Load initial chart
+            $('#reportSelector').change(function() {
+                loadReport($(this).val()); // Switch chart dynamically
+            });
+        });
+    </script>
+}
