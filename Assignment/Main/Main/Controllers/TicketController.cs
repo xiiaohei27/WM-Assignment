@@ -369,7 +369,14 @@ namespace Main.Controllers
                                 SeatNumbers = t.TicketSeats.Select(ts => ts.Seat.SeatNumber).ToList(),
                                 Showtime = t.Showtime.StartDateTime,
                                 BookingDate = t.BookingDateTime,
-                                FoodItems = t.TicketFoods.Select(tf => tf.FoodItem.Name).ToList(),
+                                FoodItems = t.TicketFoods.Select(tf => new OrderCartItemVM
+                                {
+                                    FoodId = tf.FoodItemId,
+                                    Name = tf.FoodItem.Name,
+                                    Price = tf.FoodItem.Price,
+                                    Quantity = tf.Quantity
+                                })
+                                .ToList(),
                                 QRCodeData = $"Ticket:{t.Id};Movie:{t.Showtime.Movie.Title};Seats:{string.Join(',', t.TicketSeats.Select(ts => ts.Seat.SeatNumber))};Cinema:{t.Showtime.Hall.Cinema.Name};Time:{t.Showtime.StartDateTime}"
                             })
                             .ToList();
@@ -436,7 +443,14 @@ namespace Main.Controllers
                 SeatNumbers = ticket.TicketSeats.Select(ts => ts.Seat.SeatNumber).ToList(),
                 Showtime = ticket.Showtime.StartDateTime,
                 BookingDate = ticket.BookingDateTime,
-                FoodItems = ticket.TicketFoods.Select(tf => tf.FoodItem.Name).ToList(),
+                FoodItems = ticket.TicketFoods.Select(tf => new OrderCartItemVM
+                      {
+                          FoodId = tf.FoodItemId,
+                          Name = tf.FoodItem.Name,
+                          Price = tf.FoodItem.Price,
+                          Quantity = tf.Quantity
+                      })
+                      .ToList(),
                 QRCodeData = $"Ticket:{ticket.Id};Movie:{ticket.Showtime.Movie.Title};Seats:{string.Join(',', ticket.TicketSeats.Select(ts => ts.Seat.SeatNumber))};Cinema:{ticket.Showtime.Hall.Cinema.Name};Time:{ticket.Showtime.StartDateTime}"
             };
 

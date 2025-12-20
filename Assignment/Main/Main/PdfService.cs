@@ -16,7 +16,7 @@ public static class PdfService
 
         var foodNames = ticket.TicketFoods?
             .Where(tf => tf.FoodItem != null)
-            .Select(tf => tf.FoodItem.Name)
+            .Select(tf => $"{tf.FoodItem.Name} x{tf.Quantity}")
             .ToList() ?? new List<string>();
 
         var doc = Document.Create(container =>

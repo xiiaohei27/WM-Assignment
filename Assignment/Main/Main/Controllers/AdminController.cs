@@ -744,7 +744,7 @@ public class AdminController(DB db, Helper hp) : Controller
             })
             .ToList();
 
-        return Json(movieSales); // return JSON instead of partial view
+        return Json(movieSales);
     }
 
     // Revenue earned per movie
@@ -762,7 +762,7 @@ public class AdminController(DB db, Helper hp) : Controller
             })
             .ToList();
 
-        return Json(revenue); // return JSON instead of partial view
+        return Json(revenue);
     }
 
     // Tickets sold over time

@@ -1,76 +1,113 @@
 ﻿@inject DB db
 @model TicketCheckoutVM
 @{
-    ViewBag.Title = "Checkout";
+    ViewBag.Title = "6. Checkout";
 }
 
-<h2>Checkout</h2>
+<div class="container my-4">
 
-<div>
-    <h3>@Model.Showtime.Movie.Title</h3>
-    <p>@Model.Showtime.Hall.Cinema.Name - @Model.Showtime.Hall.Name</p>
-    <p>@Model.Showtime.StartDateTime.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
-</div>
+    <!-- Movie Info -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">@Model.Showtime.Movie.Title</h3>
+            <p class="card-text"><strong>@Model.Showtime.Hall.Cinema.Name - @Model.Showtime.Hall.Name</strong></p>
+            <p class="card-text"><strong>@Model.Showtime.StartDateTime.ToString("dddd, MMM dd yyyy hh:mm tt")</strong></p>
+        </div>
+    </div>
 
-<div>
-    <h4>Selected Seats</h4>
-    @if (Model.Seats.Any())
-    {
-        <ul>
-            @foreach (var seat in Model.Seats)
+    <!-- Selected Seats -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h4>Selected Seats</h4>
+            @if (Model.Seats.Any())
             {
-                <li>@seat.SeatNumber (@seat.SeatType)</li>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Seat</th>
+                                <th>Type</th>
+                                <th>Ticket Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var seat in Model.Seats)
+                            {
+                                var seatPrice = Model.Showtime.TicketPrice * seat.Multiplier;
+                                <tr>
+                                    <td>@seat.SeatNumber</td>
+                                    <td>@seat.SeatType</td>
+                                    <td>RM @(Model.Showtime.TicketPrice.ToString("F2"))</td>
+                                    <td>RM @(seatPrice.ToString("F2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
-        </ul>
-    }
-    else
-    {
-        <p>No seats selected.</p>
-    }
-</div>
+            else
+            {
+                <p class="text-muted">No seats selected.</p>
+            }
+        </div>
+    </div>
 
-<div>
-    <h4>Food & Beverages</h4>
-    @if (!Model.FoodCart.Any())
-    {
-        <p>No food items selected.</p>
-    }
-    else
-    {
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Qty</th>
-                    <th>Unit Price</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.FoodCart)
-                {
-                    <tr>
-                        <td>@item.Name</td>
-                        <td>@item.Quantity</td>
-                        <td>RM @item.Price.ToString("F2")</td>
-                        <td>RM @((item.Price* item.Quantity).ToString("F2"))</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-</div>
+    <!-- Food & Beverages -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h4>Food & Beverages</h4>
+            @if (!Model.FoodCart.Any())
+            {
+                <p class="text-muted">No food items selected.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.FoodCart)
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td>@item.Quantity</td>
+                                    <td>RM @(item.Price.ToString("F2"))</td>
+                                    <td>RM @((item.Price* item.Quantity).ToString("F2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
 
-<div>
-    <h4>Total Price</h4>
-    @{
-        decimal totalSeatPrice = Model.Seats.Sum(s => Model.Showtime.TicketPrice * s.Multiplier);
-        decimal totalFoodPrice = Model.FoodCart.Sum(item => item.Price * item.Quantity);
-        decimal totalPrice = totalSeatPrice + totalFoodPrice;
-    }
-    <p>RM @totalPrice.ToString("F2")</p>
-</div>
+    <!-- Total Price -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <h4>Total Price</h4>
+            @{
+                decimal totalSeatPrice = Model.Seats.Sum(s => Model.Showtime.TicketPrice * s.Multiplier);
+                decimal totalFoodPrice = Model.FoodCart.Sum(item => item.Price * item.Quantity);
+                decimal totalPrice = totalSeatPrice + totalFoodPrice;
+            }
+            <h4 class="text-primary">RM @totalPrice.ToString("F2")</h4>
+        </div>
+    </div>
 
-<form method="post" asp-controller="Ticket" asp-action="ProcessCheckout">
-    <button type="submit" class="btn btn-primary">Proceed to Payment</button>
-</form>
+    <div class="d-flex justify-content-between mt-4">
+        <a asp-controller="Food" asp-action="Select" class="btn btn-outline-secondary">← Back</a>
+        <form method="post" asp-controller="Ticket" asp-action="ProcessCheckout">
+            <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+        </form>
+    </div>
+
+</div>

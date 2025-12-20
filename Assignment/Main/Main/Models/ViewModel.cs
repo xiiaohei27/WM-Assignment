@@ -264,7 +264,7 @@ public class BookingHistoryVM
     public List<string> SeatNumbers { get; set; } = new List<string>();
     public DateTime Showtime { get; set; }
     public DateTime BookingDate { get; set; }
-    public List<string> FoodItems { get; set; } = new();
+    public List<OrderCartItemVM> FoodItems { get; set; } = new();
     public string QRCodeData { get; set; } // text to encode in QR
 }
 

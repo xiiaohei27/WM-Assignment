@@ -4,26 +4,47 @@
     ViewBag.Title = "Booking Detail";
 }
 
-<p>Movie: @Model.MovieTitle</p>
-<p>Cinema: @Model.CinemaName</p>
-<p>Hall: @Model.HallName</p>
-<p>Seats: @string.Join(", ", Model.SeatNumbers)</p>
-<p>Showtime: @Model.Showtime.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
-<p>Booked on: @Model.BookingDate.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
+<div class="container my-4">
 
-@if (Model.FoodItems.Any())
-{
-    <p>Food & Drinks:</p>
-    <ul>
-        @foreach (var f in Model.FoodItems)
-        {
-            <li>@f</li>
-        }
-    </ul>
-}
+    <!-- Movie & Showtime Info -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">@Model.MovieTitle</h3>
+            <p class="card-text"><strong>Cinema:</strong> @Model.CinemaName</p>
+            <p class="card-text"><strong>Hall:</strong> @Model.HallName</p>
+            <p class="card-text"><strong>Seats:</strong> @string.Join(", ", Model.SeatNumbers)</p>
+            <p class="card-text"><strong>Showtime:</strong> @Model.Showtime.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
+            <p class="card-text"><strong>Booked on:</strong> @Model.BookingDate.ToString("dddd, MMM dd yyyy hh:mm tt")</p>
+        </div>
+    </div>
 
-<img src="@Url.Action("QRCode", "Ticket", new { id = Model.TicketId })" />
+    <!-- Food & Drinks -->
+    @if (Model.FoodItems.Any())
+    {
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h5>Food & Drinks</h5>
+                <ul class="list-group list-group-flush">
+                    @foreach (var f in Model.FoodItems)
+                    {
+                        <li class="list-group-item">@f.Name x @f.Quantity</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
 
-<div class="d-flex justify-content-between mt-4">
-    <a asp-controller="Ticket" asp-action="History" class="btn btn-outline-secondary">← Back</a>
+    <!-- QR Code -->
+    <div class="card mb-4 shadow-sm text-center">
+        <div class="card-body">
+            <h5>QR Code</h5>
+            <img src="@Url.Action("QRCode", "Ticket", new { id = Model.TicketId })" class="img-fluid" style="max-width:300px;" />
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="d-flex justify-content-start mt-4">
+        <a asp-controller="Ticket" asp-action="History" class="btn btn-outline-secondary">← Back</a>
+    </div>
+
 </div>
