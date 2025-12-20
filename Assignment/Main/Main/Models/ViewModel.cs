@@ -266,3 +266,21 @@ public class BookingHistoryVM
     public List<string> FoodItems { get; set; } = new();
     public string QRCodeData { get; set; } // text to encode in QR
 }
+
+public class TicketsSoldVM
+{
+    public string Movie { get; set; }
+    public int TicketsSold { get; set; }
+}
+
+public class RevenueVM
+{
+    public string Movie { get; set; }
+    public decimal Revenue { get; set; }
+}
+
+public class TicketsOverTimeVM
+{
+    public string Date { get; set; }
+    public int TicketsSold { get; set; }
+}

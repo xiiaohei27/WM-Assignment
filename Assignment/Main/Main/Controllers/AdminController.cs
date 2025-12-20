@@ -502,13 +502,13 @@ public class AdminController(DB db, Helper hp) : Controller
     }
 
     //POST: Admin/CreateMovie
-   [HttpPost]
+    [HttpPost]
     public IActionResult CreateMovie(MovieVM vm)
     {
         if (vm.Trailer != null)
         {
             var e = hp.ValidateVideo(vm.Trailer);
-            if (e!= "") ModelState.AddModelError("Trailer", e);
+            if (e != "") ModelState.AddModelError("Trailer", e);
         }
 
         if (vm.Image != null)
@@ -645,7 +645,7 @@ public class AdminController(DB db, Helper hp) : Controller
             }
         }
 
-        if (ModelState.IsValid) 
+        if (ModelState.IsValid)
         {
             m.Title = vm.Title;
             m.Genre = vm.Genre;
@@ -657,7 +657,7 @@ public class AdminController(DB db, Helper hp) : Controller
             m.Cast = vm.Cast;
             m.Description = vm.Description;
 
-            if (vm.Image != null) 
+            if (vm.Image != null)
             {
                 if (!string.IsNullOrEmpty(m.Image))
                 {
@@ -666,7 +666,7 @@ public class AdminController(DB db, Helper hp) : Controller
                 m.Image = hp.SavePhoto(vm.Image, "images");
             }
 
-            if (vm.Trailer != null) 
+            if (vm.Trailer != null)
             {
                 if (!string.IsNullOrEmpty(m.Trailer))
                 {
@@ -696,7 +696,7 @@ public class AdminController(DB db, Helper hp) : Controller
         return View(movie);
     }
 
-    // POST: Admin/DeleteFoodItem/
+    // POST: Admin/DeleteMovie/
     [HttpPost, ActionName("DeleteMovie")]
     [ValidateAntiForgeryToken] //prevent CSRF attack (for security)
     public IActionResult DeleteMovieConfirmation(string id)
@@ -725,6 +725,95 @@ public class AdminController(DB db, Helper hp) : Controller
         return RedirectToAction(nameof(MovieManage));
     }
 
+    public IActionResult Report()
+    {
+        return View(); // Returns Report.cshtml
+    }
+
+    // Tickets sold per movie
+    public IActionResult TicketsSoldReport()
+    {
+        var movieSales = db.Tickets
+            .Include(t => t.Showtime)
+                .ThenInclude(s => s.Movie)
+            .GroupBy(t => t.Showtime.Movie.Title)
+            .Select(g => new TicketsSoldVM
+            {
+                Movie = g.Key,
+                TicketsSold = g.Count()
+            })
+            .ToList();
+
+        return Json(movieSales); // return JSON instead of partial view
+    }
+
+    // Revenue earned per movie
+    public IActionResult RevenueReport()
+    {
+        var revenue = db.Tickets
+            .Include(t => t.Showtime).ThenInclude(s => s.Movie)
+            .Include(t => t.TicketSeats).ThenInclude(ts => ts.Seat)
+            .AsEnumerable()
+            .GroupBy(t => t.Showtime.Movie.Title)
+            .Select(g => new RevenueVM
+            {
+                Movie = g.Key,
+                Revenue = g.Sum(t => t.TicketSeats.Sum(ts => t.Showtime.TicketPrice * ts.Seat.Multiplier))
+            })
+            .ToList();
+
+        return Json(revenue); // return JSON instead of partial view
+    }
+
+    // Tickets sold over time
+    public IActionResult TicketsOverTimeReport()
+    {
+        var data = db.Tickets
+            .GroupBy(t => t.BookingDateTime.Date)
+            .Select(g => new { date = g.Key.ToString("yyyy-MM-dd"), ticketsSold = g.Count() })
+            .ToList();
+
+        return Json(data);
+    }
+
+    // Revenue over time
+    public IActionResult RevenueOverTimeReport()
+    {
+        var data = db.Tickets
+            .Include(t => t.TicketSeats)
+            .Include(t => t.Showtime)
+            .AsEnumerable()
+            .GroupBy(t => t.BookingDateTime.Date)
+            .Select(g => new { date = g.Key.ToString("yyyy-MM-dd"), revenue = g.Sum(t => t.TicketSeats.Sum(ts => t.Showtime.TicketPrice)) })
+            .ToList();
+
+        return Json(data);
+    }
+
+    // Seat type usage
+    public IActionResult SeatTypeUsageReport()
+    {
+        var data = db.TicketSeats
+            .Include(ts => ts.Seat)
+            .GroupBy(ts => ts.Seat.SeatType)
+            .Select(g => new { seatType = g.Key, count = g.Count() })
+            .ToList();
+
+        return Json(data);
+    }
+
+    // Showtime performance
+    public IActionResult ShowtimePerformanceReport()
+    {
+        var data = db.Tickets
+            .Include(t => t.Showtime)
+            .GroupBy(t => t.Showtime.StartDateTime)
+            .Select(g => new { showtime = g.Key.ToString("yyyy-MM-dd HH:mm"), ticketsSold = g.Count() })
+            .ToList();
+
+        return Json(data);
+    }
+
     // ============================================================================
     // SHOWTIME MANAGEMENT
     // ============================================================================
@@ -751,3 +840,4 @@ public class AdminController(DB db, Helper hp) : Controller
         return View(showtimes.OrderBy(s => s.StartDateTime).ToList());
     }
 }
+

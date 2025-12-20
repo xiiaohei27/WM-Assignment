@@ -167,26 +167,26 @@ public class Helper(IWebHostEnvironment en,
         return file;
     }
 
-    public decimal CalculateTotal(Ticket ticket)
-    {
-        decimal seatTotal = 0;
-        if (ticket.TicketSeats != null && ticket.Showtime != null)
-        {
-            seatTotal = ticket.TicketSeats.Sum(ts =>
-                (ts.Seat != null ? ticket.Showtime.TicketPrice * ts.Seat.Multiplier : 0)
-            );
-        }
+    //public decimal CalculateTotal(Ticket ticket)
+    //{
+    //    decimal seatTotal = 0;
+    //    if (ticket.TicketSeats != null && ticket.Showtime != null)
+    //    {
+    //        seatTotal = ticket.TicketSeats.Sum(ts =>
+    //            (ts.Seat != null ? ticket.Showtime.TicketPrice * ts.Seat.Multiplier : 0)
+    //        );
+    //    }
 
-        decimal foodTotal = 0;
-        if (ticket.TicketFoods != null)
-        {
-            foodTotal = ticket.TicketFoods.Sum(tf =>
-                (tf.FoodItem != null ? tf.FoodItem.Price * tf.Quantity : 0)
-            );
-        }
+    //    decimal foodTotal = 0;
+    //    if (ticket.TicketFoods != null)
+    //    {
+    //        foodTotal = ticket.TicketFoods.Sum(tf =>
+    //            (tf.FoodItem != null ? tf.FoodItem.Price * tf.Quantity : 0)
+    //        );
+    //    }
 
-        return seatTotal + foodTotal;
-    }
+    //    return seatTotal + foodTotal;
+    //}
 
     public string ValidateVideo(IFormFile f)
     {
