@@ -110,7 +110,7 @@
                                         }
                                     </small>
                                 </div>
-                                <a asp-action="OrderQR" asp-route-orderId="@order.Id" class="btn btn-primary w-100 btn-sm">
+                                <a asp-controller="Food" asp-action="OrderQR" asp-route-orderId="@order.Id" class="btn btn-primary w-100 btn-sm">
                                     <i class="bi bi-qr-code"></i> Show QR Code
                                 </a>
                             }

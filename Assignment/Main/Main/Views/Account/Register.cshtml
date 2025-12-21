@@ -4,41 +4,99 @@
     ViewBag.Title = "Account | Register";
 }
 
-<form class="form" method="post" enctype="multipart/form-data">
-    <div asp-validation-summary="ModelOnly"></div>
+<div class="auth-wrapper container my-5">
+    <div class="card auth-card mx-auto">
+        <div class="card-body">
+            <h4 class="card-title text-center mb-3">Create an account</h4>
 
-    <label asp-for="Email"></label>
-    <input asp-for="Email" autofocus>
-    <span asp-validation-for="Email"></span>
+            <form class="needs-validation" method="post" enctype="multipart/form-data" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <label asp-for="Password"></label>
-    <input asp-for="Password">
-    <span asp-validation-for="Password"></span>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
 
-    <label asp-for="Confirm"></label>
-    <input asp-for="Confirm">
-    <span asp-validation-for="Confirm"></span>
+                <div class="row g-2">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Confirm" class="form-label"></label>
+                        <input asp-for="Confirm" class="form-control" />
+                        <span asp-validation-for="Confirm" class="text-danger small"></span>
+                    </div>
+                </div>
 
-    <label asp-for="Username"></label>
-    <input asp-for="Username">
-    <span asp-validation-for="Username"></span>
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label"></label>
+                    <input asp-for="Username" class="form-control" />
+                    <span asp-validation-for="Username" class="text-danger small"></span>
+                </div>
 
-    <label asp-for="Image"></label>
-    <label class="upload">
-        <small>Select Photo...</small>
-        <input asp-for="Image" accept="image/jpeg,image/png" hidden>
-        <img src="/images/photo.jpg">
-    </label>
-    <span asp-validation-for="Image"></span>
+                <div class="mb-3">
+                    <label class="form-label">Photo</label>
+                    <label class="upload d-inline-block">
+                        <small class="d-block text-muted mb-2">Select Photo...</small>
+                        <input asp-for="Image" accept="image/jpeg,image/png" class="form-control-file" hidden />
+                        <img id="register-preview" src="/images/photo.jpg" alt="preview" class="upload-preview" />
+                    </label>
+                    <span asp-validation-for="Image" class="text-danger small d-block mt-2"></span>
+                </div>
 
-    <section>
-        <button>Register</button>
-        <button type="reset">Reset</button>
-    </section>
-</form>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">Register</button>
+                    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                </div>
+            </form>
+
+            <div class="text-center mt-3 small">
+                Already have an account? <a href="/Account/Login">Login</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section foot {
     <script>
+        // keep unobtrusive validation including file inputs
         $.validator.setDefaults({ ignore: '' });
+
+        // Preview selected image
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.querySelector('input[type="file"][asp-for="Image"], input[type="file"][name="Image"]') || document.querySelector('input[type="file"]');
+            const preview = document.getElementById('register-preview');
+            if (!fileInput || !preview) return;
+            fileInput.addEventListener('change', function (e) {
+                const f = e.target.files && e.target.files[0];
+                if (!f) {
+                    preview.src = '/images/photo.jpg';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    preview.src = ev.target.result;
+                };
+                reader.readAsDataURL(f);
+            });
+        });
+
+        // bootstrap validation helper
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
     </script>
 }
