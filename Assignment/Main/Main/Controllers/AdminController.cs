@@ -868,6 +868,36 @@ public class AdminController(DB db, Helper hp) : Controller
         return View(showtimes.OrderBy(s => s.StartDateTime).ToList());
     }
 
+    // GET: Admin/GetShowtimeByFilter
+    [HttpGet]
+    public JsonResult GetShowtimeByFilter(string? movieId, string? search)
+    {
+        var showtime = db.Showtimes.Include(s => s.Movie).Include(s => s.Hall).AsQueryable();
+
+        if (!string.IsNullOrEmpty(movieId))
+            showtime = showtime.Where(s => s.MovieId == movieId);
+
+        if (!string.IsNullOrEmpty(search))
+            showtime = showtime.Where(s => s.Movie.Title.Contains(search));
+
+        var result = showtime
+            .OrderBy(s => s.StartDateTime)
+            .Select(s => new
+            {
+                Id = s.Id,
+                MovieId = s.MovieId,
+                HallId = s.HallId,
+                MovieTitle = s.Movie.Title,
+                Image = s.Movie.Image,
+                StartDateTime = s.StartDateTime,
+                EndDateTime = s.EndDateTime,
+                TicketPrice = s.TicketPrice
+            })
+            .ToList();
+
+        return Json(result);
+    }
+
     // GET: Admin/CreateShowtime
     public IActionResult CreateShowtime()
     {
