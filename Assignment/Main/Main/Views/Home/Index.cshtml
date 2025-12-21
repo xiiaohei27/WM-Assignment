@@ -2,62 +2,46 @@
 
 @{
     ViewBag.Title = "Home | Index";
-    var featured = ViewBag.Featured as Movie;
 }
 
 <div class="container mt-4">
 
-    @if (featured != null)
-    {
-        <!-- Featured Movie -->
-        <h2>Featured Movie</h2>
-        <div class="featured-movie mb-4">
-            <a asp-action="Detail" asp-controller="Movie" asp-route-id="@featured.Id">
-                <img src="/images/@ViewBag.Featured.Image" alt="@featured.Title" class="movie-poster" />
-            </a>
-            <h3>@featured.Title</h3>
-            <p>@featured.Genre</p>
-        </div>
-    }
-    else
-    {
-        <p class="text-muted">No featured movies available right now.</p>
-    }
+    <!-- Featured Movie -->
+    <h2>Featured Movie</h2>
+    <div class="featured-movie mb-4">
+        <a asp-action="Detail" asp-controller="Movie" asp-route-id="@ViewBag.Featured.Id">
+            <img src="/images/@ViewBag.Featured.Image" alt="@ViewBag.Featured.Title" class="movie-poster"/>
+        </a>
+        <h3>@ViewBag.Featured.Title</h3>
+        <p>@ViewBag.Featured.Genre</p>
+    </div>
 
-    @if (Model != null && Model.Any())
-    {
-        <h2>Now Showing</h2>
+    <h2>Now Showing</h2>
 
-        <div class="simple-slider">
-            <button id="prevBtn">‹</button>
+    <div class="simple-slider">
+        <button id="prevBtn">‹</button>
 
-            <div class="slider-window">
-                <div class="slider-track">
-                    @foreach (var movie in Model)
-                    {
-                        <div class="slide">
-                            <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">
-                                <img src="/images/@movie.Image" alt="@movie.Title" class="movie-poster">
-                            </a>
-                            <h3>@movie.Title</h3>
-                            <p>@movie.Genre</p>
-                        </div>
-                    }
-                </div>
+        <div class="slider-window">
+            <div class="slider-track">
+                @foreach (var movie in Model)
+                {
+                    <div class="slide">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-id="@movie.Id">
+                            <img src="/images/@movie.Image" alt="@movie.Title" class="movie-poster">
+                        </a>
+                        <h3>@movie.Title</h3>
+                        <p>@movie.Genre</p>
+                    </div>
+                }
             </div>
-
-            <button id="nextBtn">›</button>
         </div>
-    }
-    else
-    {
-        <p class="text-muted">No movies available right now.</p>
-    }
-    
+
+        <button id="nextBtn">›</button>
+    </div>
 
 
     <!-- Food & Beverage Section -->
-    <div style="margin-top: 60px; padding: 30px 0; background-color: #f8f9fa;">
+    <div class="featured-food-section">
         <h2>Food & Beverage</h2>
         <p>Enhance your movie experience with our delicious snacks and beverages!</p>
 
@@ -76,7 +60,7 @@
         const prev = document.getElementById('prevBtn');
         const next = document.getElementById('nextBtn');
 
-        const slideWidth = 305;
+        const slideWidth = 320;
         const visibleSlides = 3;
         let index = 0;
 

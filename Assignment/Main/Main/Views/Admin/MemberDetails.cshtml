@@ -17,7 +17,7 @@
             <div class="card">
                 <div class="card-body text-center">
                     <img src="/photos/@Model.Image" alt="@Model.Username"
-                         class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                         class="rounded-circle mb-3 member-avatar">
                     <h4>@Model.Username</h4>
                     <p class="text-muted">@Model.Email</p>
                     @if (Model.IsEmailVerified)
@@ -58,8 +58,7 @@
                                 <span class="badge bg-success">Verified</span>
                                 @if (Model.EmailVerifiedAt.HasValue)
                                 {
-                                    <br>
-                            
+                                    <br />
                                     <small class="text-muted">Verified on @Model.EmailVerifiedAt.Value.ToString("MMM dd, yyyy")</small>
                                 }
                             }
@@ -72,14 +71,14 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card mb-3">
                 <div class="card-header">
-                    <h5>Booking History</h5>
+                    <h5>Ticket Booking History</h5>
                 </div>
                 <div class="card-body">
                     @if (!Model.Tickets.Any())
                     {
-                        <p class="text-muted">No bookings yet.</p>
+                        <p class="text-muted">No ticket bookings yet.</p>
                     }
                     else
                     {
@@ -89,7 +88,7 @@
                                     <tr>
                                         <th>Movie</th>
                                         <th>Showtime</th>
-                                        <th>Seat</th>
+                                        <th>Seats</th>
                                         <th>Booking Date</th>
                                     </tr>
                                 </thead>
@@ -108,10 +107,112 @@
                                 </tbody>
                             </table>
                         </div>
-                        <p class="text-muted small mt-2">Total Bookings: @Model.Tickets.Count</p>
+                        <p class="text-muted small mt-2">Total Ticket Bookings: @Model.Tickets.Count</p>
+                    }
+                </div>
+            </div>
+
+            @{
+                // Get food orders for this member
+                var db = Context.RequestServices.GetService<DB>();
+                var foodOrders = db.FoodOrders
+                    .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.FoodItem)
+                    .Where(o => o.UserId == Model.Id)
+                    .OrderByDescending(o => o.OrderDateTime)
+                    .ToList();
+            }
+
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-basket"></i> Food Order History</h5>
+                </div>
+                <div class="card-body">
+                    @if (!foodOrders.Any())
+                    {
+                        <p class="text-muted">No food orders yet.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in foodOrders)
+                                    {
+                                        var isExpired = order.ExpiresAt < DateTime.Now;
+                                        var statusColor = order.IsRedeemed ? "success" : isExpired ? "danger" : "info";
+
+                                        <tr>
+                                            <td>
+                                                <small class="font-monospace">@order.RedemptionCode</small>
+                                            </td>
+                                            <td>
+                                                <small>@order.OrderDateTime.ToString("MMM dd, yyyy")</small>
+                                                <br />
+                                                <small class="text-muted">@order.OrderDateTime.ToString("hh:mm tt")</small>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var itemsToShow = order.OrderItems.Take(2).ToList();
+                                                    foreach (var item in itemsToShow)
+                                                    {
+                                                        if (item.FoodItem != null)
+                                                        {
+                                                            <small>@item.FoodItem.Name ×@item.Quantity</small>
+                                                            <br />
+                                                        }
+                                                    }
+                                                    if (order.OrderItems.Count > 2)
+                                                    {
+                                                        <small class="text-muted">+@(order.OrderItems.Count - 2) more...</small>
+                                                    }
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong>RM @order.TotalAmount.ToString("F2")</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-@statusColor">@order.Status</span>
+                                                @if (order.IsRedeemed && order.RedeemedAt.HasValue)
+                                                {
+                                                    <br />
+                                                    <small class="text-muted">@order.RedeemedAt.Value.ToString("MMM dd, hh:mm tt")</small>
+                                                }
+                                                else if (isExpired)
+                                                {
+                                                    <br />
+                                                    <small class="text-danger">Expired</small>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted small mt-2">
+                            Total Food Orders: @foodOrders.Count |
+                            Active: @foodOrders.Count(o => !o.IsRedeemed && o.ExpiresAt > DateTime.Now) |
+                            Redeemed: @foodOrders.Count(o => o.IsRedeemed) |
+                            Expired: @foodOrders.Count(o => o.ExpiresAt < DateTime.Now && !o.IsRedeemed)
+                        </p>
                     }
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .font-monospace {
+        font-family: 'Courier New', monospace;
+    }
+</style>

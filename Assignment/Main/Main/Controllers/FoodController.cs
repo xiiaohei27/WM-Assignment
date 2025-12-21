@@ -162,6 +162,22 @@ public class FoodController : Controller
             return RedirectToAction("Index");
         }
 
+        // Get the actual User ID (not email)
+        var userEmail = User.Identity?.Name;
+        if (string.IsNullOrEmpty(userEmail))
+        {
+            TempData["Error"] = "User not authenticated.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Find user by email to get their ID
+        var user = db.Users.FirstOrDefault(u => u.Email == userEmail);
+        if (user == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Login", "Account");
+        }
+
         // Generate redemption code
         var redemptionCode = QRCodeHelper.GenerateRedemptionCode();
 
@@ -169,7 +185,7 @@ public class FoodController : Controller
         var order = new FoodOrder
         {
             Id = Guid.NewGuid().ToString(),
-            UserId = User.Identity?.IsAuthenticated == true ? User.Identity.Name : null,
+            UserId = user.Id, // Use the actual user ID, not email
             OrderDateTime = DateTime.Now,
             TotalAmount = cart.Sum(c => c.Price * c.Quantity),
             Status = "Confirmed",
@@ -206,7 +222,7 @@ public class FoodController : Controller
             var ticket = new Ticket
             {
                 Id = Guid.NewGuid().ToString(),
-                UserId = User.Identity?.IsAuthenticated == true ? User.Identity.Name : null,
+                UserId = user.Id, // Use actual user ID
                 ShowtimeId = pendingShowtimeId,
                 BookingDateTime = DateTime.Now
             };
@@ -233,7 +249,15 @@ public class FoodController : Controller
             TempData["Info"] = "Food order placed successfully!";
         }
 
-        db.SaveChanges();
+        try
+        {
+            db.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error placing order: {ex.Message}";
+            return RedirectToAction("Cart");
+        }
 
         // Clear cart
         HttpContext.Session.Remove("FoodCart");
@@ -339,10 +363,27 @@ public class FoodController : Controller
     [Authorize]
     public IActionResult MyOrders()
     {
+        // Get the current user's email from Identity
+        var userEmail = User.Identity?.Name;
+        if (string.IsNullOrEmpty(userEmail))
+        {
+            TempData["Error"] = "User not authenticated.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Find user by email to get their ID
+        var user = db.Users.FirstOrDefault(u => u.Email == userEmail);
+        if (user == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Now query orders using the actual UserId
         var orders = db.FoodOrders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.FoodItem)
-            .Where(o => o.UserId == User.Identity!.Name)
+            .Where(o => o.UserId == user.Id) // Fixed: use user.Id instead of email
             .OrderByDescending(o => o.OrderDateTime)
             .ToList();
 
@@ -353,14 +394,39 @@ public class FoodController : Controller
     [Authorize]
     public IActionResult OrderQR(string orderId)
     {
+        // Get the current user's email
+        var userEmail = User.Identity?.Name;
+        if (string.IsNullOrEmpty(userEmail))
+        {
+            TempData["Error"] = "User not authenticated.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Find user by email to get their ID
+        var user = db.Users.FirstOrDefault(u => u.Email == userEmail);
+        if (user == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Get the order
         var order = db.FoodOrders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.FoodItem)
             .FirstOrDefault(o => o.Id == orderId);
 
-        if (order == null || (order.UserId != User.Identity!.Name && !User.IsInRole("Admin")))
+        // Check if order exists
+        if (order == null)
         {
             TempData["Error"] = "Order not found.";
+            return RedirectToAction("MyOrders");
+        }
+
+        // Check if user owns this order or is admin
+        if (order.UserId != user.Id && !User.IsInRole("Admin"))
+        {
+            TempData["Error"] = "You don't have permission to view this order.";
             return RedirectToAction("MyOrders");
         }
 
@@ -398,6 +464,40 @@ public class FoodController : Controller
                                      .ToDictionary(f => f.FoodId, f => f.Quantity);
 
         return View(foodItems);
+    }
+
+    [HttpGet]
+    public JsonResult GetFoodItemsByFilter(string? categoryId, string? search)
+    {
+        var items = db.FoodItems
+            .Include(f => f.Category)
+            .Where(f => f.IsAvailable)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(categoryId))
+        {
+            items = items.Where(f => f.CategoryId == categoryId);
+        }
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            items = items.Where(f => f.Name.Contains(search));
+        }
+
+        var result = items
+            .OrderBy(f => f.Name)
+            .Select(f => new
+            {
+                id = f.Id,
+                name = f.Name,
+                description = f.Description,
+                price = f.Price,
+                image = f.Image,
+                categoryName = f.Category.Name
+            })
+            .ToList();
+
+        return Json(result);
     }
 
     [Authorize(Roles = "Member")]

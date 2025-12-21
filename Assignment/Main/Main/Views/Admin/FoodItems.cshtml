@@ -2,6 +2,8 @@
 @{
     ViewBag.Title = "Manage Food Items";
     var categories = ViewBag.Categories as List<FoodCategory>;
+    var selectedCategoryId = ViewBag.CategoryId as string;
+    var searchTerm = ViewBag.Search as string;
 }
 
 <div class="container mt-4">
@@ -25,98 +27,81 @@
                         <option value="">All Categories</option>
                         @foreach (var cat in categories)
                         {
-                            <option value="@cat.Id">@cat.Name</option>
+                            <option value="@cat.Id" selected="@(selectedCategoryId == cat.Id)">@cat.Name</option>
                         }
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Search</label>
                     <input type="text" id="searchInput" class="form-control"
-                           placeholder="Search by name...">
+                           placeholder="Search by name..." value="@searchTerm">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
-                    <div class="d-flex gap-2">
-                        <button type="button" id="clearBtn" class="btn btn-outline-secondary">Clear</button>
-                    </div>
+                    <button type="button" id="clearBtn" class="btn btn-outline-secondary w-100">Clear</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="foodItemsTable" class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (!Model.Any())
+    <!-- Food Items Grid -->
+    <div id="foodItemsContainer" class="row">
+        @if (!Model.Any())
+        {
+            <div class="col-12">
+                <div class="alert alert-info">No food items available in this category.</div>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(item.Image))
                         {
-                            <tr>
-                                <td colspan="6" class="text-center">No food items found.</td>
-                            </tr>
+                            <img src="~/food/@item.Image" class="card-img-top" alt="@item.Name"
+                                 style="height: 200px; object-fit: cover;">
                         }
                         else
                         {
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(item.Image))
-                                        {
-                                            <img src="~/food/@item.Image" alt="@item.Name"
-                                                 class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
-                                        }
-                                        else
-                                        {
-                                            <div class="bg-secondary rounded d-flex align-items-center justify-content-center"
-                                                 style="width: 50px; height: 50px;">
-                                                <span class="text-white">N/A</span>
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>
-                                        <strong>@item.Name</strong>
-                                        @if (!string.IsNullOrEmpty(item.Description))
-                                        {
-                                            <br>
-                                            <small class="text-muted">@(item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)</small>
-                                        }
-                                    </td>
-                                    <td><span class="badge bg-info">@item.Category.Name</span></td>
-                                    <td><strong>RM @item.Price.ToString("F2")</strong></td>
-                                    <td>
-                                        @if (item.IsAvailable)
-                                        {
-                                            <span class="badge bg-success">Available</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">Unavailable</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <a asp-action="EditFoodItem" asp-route-id="@item.Id"
-                                           class="btn btn-sm btn-primary">Edit</a>
-                                        <a asp-action="DeleteFoodItem" asp-route-id="@item.Id"
-                                           class="btn btn-sm btn-danger">Delete</a>
-                                    </td>
-                                </tr>
-                            }
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                                 style="height: 200px;">
+                                <span class="text-white fs-4">No Image</span>
+                            </div>
                         }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text text-muted small flex-grow-1">
+                                @(item.Description?.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description)
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="h5 mb-0 text-primary">RM @item.Price.ToString("F2")</span>
+                                <span class="badge bg-info">@item.Category.Name</span>
+                            </div>
+                            <div class="mb-2">
+                                @if (item.IsAvailable)
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Available</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Unavailable</span>
+                                }
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a asp-action="EditFoodItem" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a asp-action="DeleteFoodItem" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
     </div>
 
     <p id="itemCount" class="mt-3 text-muted">Total: @Model.Count item(s)</p>
@@ -133,43 +118,57 @@
                 categoryId: categoryId,
                 search: search
             }, function(data) {
-                var tbody = $('#foodItemsTable tbody');
-                tbody.empty();
+                var container = $('#foodItemsContainer');
+                container.empty();
 
                 if (!data || data.length === 0) {
-                    tbody.append('<tr><td colspan="6" class="text-center">No food items found.</td></tr>');
+                    container.append('<div class="col-12"><div class="alert alert-info">No food items available.</div></div>');
                     $('#itemCount').text('Total: 0 item(s)');
                     return;
                 }
 
                 data.forEach(function(item) {
                     var imageHtml = item.image
-                        ? '<img src="/food/' + item.image + '" alt="' + item.name + '" class="rounded" style="width:50px;height:50px;object-fit:cover;">'
-                        : '<div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width:50px;height:50px;"><span class="text-white">N/A</span></div>';
+                        ? '<img src="/food/' + item.image + '" class="card-img-top" alt="' + item.name + '" style="height:200px;object-fit:cover;">'
+                        : '<div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height:200px;"><span class="text-white fs-4">No Image</span></div>';
 
-                    var description = item.description
-                        ? (item.description.length > 50 ? item.description.substring(0, 50) + "..." : item.description)
-                        : "";
+                    var description = item.description || 'No description';
+                    var shortDesc = description.length > 100 ? description.substring(0, 100) + '...' : description;
 
-                    var statusBadge = item.isAvailable
-                        ? '<span class="badge bg-success">Available</span>'
-                        : '<span class="badge bg-secondary">Unavailable</span>';
+                    var availabilityBadge = item.isAvailable
+                        ? '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Available</span>'
+                        : '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Unavailable</span>';
 
-                    tbody.append('<tr>' +
-                        '<td>' + imageHtml + '</td>' +
-                        '<td><strong>' + item.name + '</strong>' +
-                        (description ? '<br><small class="text-muted">' + description + '</small>' : '') + '</td>' +
-                        '<td><span class="badge bg-info">' + item.categoryName + '</span></td>' +
-                        '<td><strong>RM ' + item.price.toFixed(2) + '</strong></td>' +
-                        '<td>' + statusBadge + '</td>' +
-                        '<td>' +
-                            '<a href="/Admin/EditFoodItem/' + item.id + '" class="btn btn-sm btn-primary">Edit</a> ' +
-                            '<a href="/Admin/DeleteFoodItem/' + item.id + '" class="btn btn-sm btn-danger">Delete</a>' +
-                        '</td>' +
-                    '</tr>');
+                    var card = '<div class="col-md-4 col-sm-6 mb-4">' +
+                        '<div class="card h-100 shadow-sm">' +
+                            imageHtml +
+                            '<div class="card-body d-flex flex-column">' +
+                                '<h5 class="card-title">' + item.name + '</h5>' +
+                                '<p class="card-text text-muted small flex-grow-1">' + shortDesc + '</p>' +
+                                '<div class="d-flex justify-content-between align-items-center mb-3">' +
+                                    '<span class="h5 mb-0 text-primary">RM ' + item.price.toFixed(2) + '</span>' +
+                                    '<span class="badge bg-info">' + item.categoryName + '</span>' +
+                                '</div>' +
+                                '<div class="mb-2">' + availabilityBadge + '</div>' +
+                                '<div class="d-grid gap-2">' +
+                                    '<a href="/Admin/EditFoodItem/' + item.id + '" class="btn btn-sm btn-primary">' +
+                                        '<i class="bi bi-pencil"></i> Edit' +
+                                    '</a>' +
+                                    '<a href="/Admin/DeleteFoodItem/' + item.id + '" class="btn btn-sm btn-danger">' +
+                                        '<i class="bi bi-trash"></i> Delete' +
+                                    '</a>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+
+                    container.append(card);
                 });
 
                 $('#itemCount').text('Total: ' + data.length + ' item(s)');
+            }).fail(function() {
+                var container = $('#foodItemsContainer');
+                container.html('<div class="col-12"><div class="alert alert-danger">Error loading food items. Please refresh the page.</div></div>');
             });
         }
 
@@ -185,3 +184,14 @@
         });
     });
 </script>
+
+<style>
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+        }
+</style>

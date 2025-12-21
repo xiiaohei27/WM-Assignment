@@ -10,22 +10,26 @@
     </div>
 
     <!-- Search Form -->
-    <form method="get" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="search" class="form-control"
-                   placeholder="Search by name or email..." value="@ViewBag.Search">
-            <button type="submit" class="btn btn-primary">Search</button>
-            @if (!string.IsNullOrEmpty(ViewBag.Search))
-            {
-                <a asp-action="Members" class="btn btn-outline-secondary">Clear</a>
-            }
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-10">
+                    <label class="form-label">Search</label>
+                    <input type="text" id="searchInput" class="form-control"
+                           placeholder="Search by name or email..." value="@ViewBag.Search">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" id="clearBtn" class="btn btn-outline-secondary w-100">Clear</button>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table id="membersTable" class="table table-hover">
                     <thead>
                         <tr>
                             <th>Photo</th>
@@ -80,5 +84,56 @@
         </div>
     </div>
 
-    <p class="mt-3 text-muted">Total: @Model.Count member(s)</p>
+    <p id="memberCount" class="mt-3 text-muted">Total: @Model.Count member(s)</p>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function loadMembers() {
+            var search = $('#searchInput').val();
+
+            $.get('/Admin/GetMembersByFilter', {
+                search: search
+            }, function(data) {
+                var tbody = $('#membersTable tbody');
+                tbody.empty();
+
+                if (!data || data.length === 0) {
+                    tbody.append('<tr><td colspan="5" class="text-center">No members found.</td></tr>');
+                    $('#memberCount').text('Total: 0 member(s)');
+                    return;
+                }
+
+                data.forEach(function(member) {
+                    var statusBadge = member.isEmailVerified
+                        ? '<span class="badge bg-success">Verified</span>'
+                        : '<span class="badge bg-warning">Not Verified</span>';
+
+                    tbody.append('<tr>' +
+                        '<td><img src="/photos/' + member.image + '" alt="' + member.username + '" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;"></td>' +
+                        '<td>' + member.username + '</td>' +
+                        '<td>' + member.email + '</td>' +
+                        '<td>' + statusBadge + '</td>' +
+                        '<td>' +
+                            '<a href="/Admin/MemberDetails/' + member.id + '" class="btn btn-sm btn-info">Details</a> ' +
+                            '<a href="/Admin/EditMember/' + member.id + '" class="btn btn-sm btn-primary">Edit</a> ' +
+                            '<a href="/Admin/DeleteMember/' + member.id + '" class="btn btn-sm btn-danger">Delete</a>' +
+                        '</td>' +
+                    '</tr>');
+                });
+
+                $('#memberCount').text('Total: ' + data.length + ' member(s)');
+            });
+        }
+
+        // Real-time filtering
+        $('#searchInput').on('input', loadMembers);
+
+        // Clear button
+        $('#clearBtn').click(function() {
+            $('#searchInput').val('');
+            loadMembers();
+        });
+    });
+</script>
