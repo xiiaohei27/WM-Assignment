@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\trailers\**" />
+    <Content Remove="wwwroot\trailers\**" />
+    <EmbeddedResource Remove="wwwroot\trailers\**" />
+    <None Remove="wwwroot\trailers\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
       <PrivateAssets>all</PrivateAssets>
@@ -17,10 +24,6 @@
     <PackageReference Include="QuestPDF" Version="2025.12.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="Stripe.net" Version="50.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\trailers\" />
   </ItemGroup>
 
 </Project>
