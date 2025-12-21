@@ -18,42 +18,36 @@
     <!-- Filter Form -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="get" class="row g-3">
+            <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Category</label>
-                    <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                    <select id="categorySelector" class="form-select">
                         <option value="">All Categories</option>
                         @foreach (var cat in categories)
                         {
-                            <option value="@cat.Id" selected="@(ViewBag.CategoryId == cat.Id)">
-                                @cat.Name
-                            </option>
+                            <option value="@cat.Id">@cat.Name</option>
                         }
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Search</label>
-                    <input type="text" name="search" class="form-control"
-                           placeholder="Search by name..." value="@ViewBag.Search">
+                    <input type="text" id="searchInput" class="form-control"
+                           placeholder="Search by name...">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                        @if (!string.IsNullOrEmpty(ViewBag.Search) || !string.IsNullOrEmpty(ViewBag.CategoryId))
-                        {
-                            <a asp-action="FoodItems" class="btn btn-outline-secondary">Clear</a>
-                        }
+                    <div class="d-flex gap-2">
+                        <button type="button" id="clearBtn" class="btn btn-outline-secondary">Clear</button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table id="foodItemsTable" class="table table-hover">
                     <thead>
                         <tr>
                             <th>Image</th>
@@ -95,7 +89,6 @@
                                         @if (!string.IsNullOrEmpty(item.Description))
                                         {
                                             <br>
-                                
                                             <small class="text-muted">@(item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)</small>
                                         }
                                     </td>
@@ -126,5 +119,69 @@
         </div>
     </div>
 
-    <p class="mt-3 text-muted">Total: @Model.Count item(s)</p>
+    <p id="itemCount" class="mt-3 text-muted">Total: @Model.Count item(s)</p>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function loadFoodItems() {
+            var categoryId = $('#categorySelector').val();
+            var search = $('#searchInput').val();
+
+            $.get('/Admin/GetFoodItemsByFilter', {
+                categoryId: categoryId,
+                search: search
+            }, function(data) {
+                var tbody = $('#foodItemsTable tbody');
+                tbody.empty();
+
+                if (!data || data.length === 0) {
+                    tbody.append('<tr><td colspan="6" class="text-center">No food items found.</td></tr>');
+                    $('#itemCount').text('Total: 0 item(s)');
+                    return;
+                }
+
+                data.forEach(function(item) {
+                    var imageHtml = item.image
+                        ? '<img src="/food/' + item.image + '" alt="' + item.name + '" class="rounded" style="width:50px;height:50px;object-fit:cover;">'
+                        : '<div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width:50px;height:50px;"><span class="text-white">N/A</span></div>';
+
+                    var description = item.description
+                        ? (item.description.length > 50 ? item.description.substring(0, 50) + "..." : item.description)
+                        : "";
+
+                    var statusBadge = item.isAvailable
+                        ? '<span class="badge bg-success">Available</span>'
+                        : '<span class="badge bg-secondary">Unavailable</span>';
+
+                    tbody.append('<tr>' +
+                        '<td>' + imageHtml + '</td>' +
+                        '<td><strong>' + item.name + '</strong>' +
+                        (description ? '<br><small class="text-muted">' + description + '</small>' : '') + '</td>' +
+                        '<td><span class="badge bg-info">' + item.categoryName + '</span></td>' +
+                        '<td><strong>RM ' + item.price.toFixed(2) + '</strong></td>' +
+                        '<td>' + statusBadge + '</td>' +
+                        '<td>' +
+                            '<a href="/Admin/EditFoodItem/' + item.id + '" class="btn btn-sm btn-primary">Edit</a> ' +
+                            '<a href="/Admin/DeleteFoodItem/' + item.id + '" class="btn btn-sm btn-danger">Delete</a>' +
+                        '</td>' +
+                    '</tr>');
+                });
+
+                $('#itemCount').text('Total: ' + data.length + ' item(s)');
+            });
+        }
+
+        // Real-time filtering
+        $('#categorySelector').on('change', loadFoodItems);
+        $('#searchInput').on('input', loadFoodItems);
+
+        // Clear button
+        $('#clearBtn').click(function() {
+            $('#categorySelector').val('');
+            $('#searchInput').val('');
+            loadFoodItems();
+        });
+    });
+</script>

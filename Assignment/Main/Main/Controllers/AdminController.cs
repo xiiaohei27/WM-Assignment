@@ -451,6 +451,42 @@ public class AdminController(DB db, Helper hp) : Controller
         return RedirectToAction(nameof(FoodItems));
     }
 
+    [HttpGet]
+    public IActionResult GetFoodItemsByFilter(string? categoryId, string? search)
+    {
+        var query = db.FoodItems
+            .Include(f => f.Category)
+            .AsQueryable();
+
+        // Filter by category
+        if (!string.IsNullOrEmpty(categoryId))
+        {
+            query = query.Where(f => f.CategoryId == categoryId);
+        }
+
+        // Search by name
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(f => f.Name.Contains(search));
+        }
+
+        var items = query
+            .OrderBy(f => f.Name)
+            .Select(f => new
+            {
+                id = f.Id,
+                name = f.Name,
+                description = f.Description,
+                price = f.Price,
+                image = f.Image,
+                isAvailable = f.IsAvailable,
+                categoryName = f.Category.Name
+            })
+            .ToList();
+
+        return Json(items);
+    }
+
     // GET: Admin/Dashboard
     public IActionResult Dashboard()
     {
