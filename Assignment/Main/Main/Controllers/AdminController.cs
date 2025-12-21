@@ -239,6 +239,7 @@ public class AdminController(DB db, Helper hp) : Controller
         return View(vm);
     }
 
+
     // POST: Admin/EditCategory
     [HttpPost]
     public IActionResult EditCategory(FoodCategoryVM vm)
@@ -507,7 +508,8 @@ public class AdminController(DB db, Helper hp) : Controller
                 price = f.Price,
                 image = f.Image,
                 isAvailable = f.IsAvailable,
-                categoryName = f.Category.Name
+                categoryName = f.Category.Name,
+                categoryId = f.CategoryId
             })
             .ToList();
 
