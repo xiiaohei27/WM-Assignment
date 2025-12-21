@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Main.Controllers;
 
@@ -9,11 +10,19 @@ public class HomeController(DB db) : Controller
     // GET: Home/Index
     public IActionResult Index()
     {
-        // Get the first 1 featured movie (just as an example)
-        var featured = db.Movies.OrderByDescending(m => m.ReleaseDate).FirstOrDefault();
+        // Get the first featured movie that has at least one showtime
+        var featured = db.Movies
+                         .Include(m => m.Showtimes) // include showtimes
+                         .Where(m => m.Showtimes.Any()) // only movies with showtimes
+                         .OrderByDescending(m => m.ReleaseDate)
+                         .FirstOrDefault();
 
-        // Get 4 movies for "Now Showing"
-        var nowShowing = db.Movies.OrderByDescending(m => m.ReleaseDate).Take(4).ToList();
+        // Get movies for "Now Showing" that have showtimes
+        var nowShowing = db.Movies
+                           .Include(m => m.Showtimes)
+                           .Where(m => m.Showtimes.Any())
+                           .OrderByDescending(m => m.ReleaseDate)
+                           .ToList();
 
         // Send them to the view
         ViewBag.Featured = featured;

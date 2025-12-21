@@ -2,14 +2,16 @@
     ViewBag.Title = "Report";
 }
 
-<select id="reportSelector">
-    <option value="TicketsSoldReport">Tickets Sold per Movie</option>
-    <option value="RevenueReport">Revenue Earned per Movie</option>
-    <option value="TicketsOverTimeReport">Tickets Sold Over Time</option>
-    <option value="RevenueOverTimeReport">Revenue Earned Over Time</option>
-    <option value="SeatTypeUsageReport">Seat Type Usage</option>
-    <option value="ShowtimePerformanceReport">Showtime Performance</option>
-</select>
+<div class="container my-4">
+    <select id="reportSelector">
+        <option value="TicketsSoldReport">Tickets Sold per Movie</option>
+        <option value="RevenueReport">Revenue Earned per Movie</option>
+        <option value="TicketsOverTimeReport">Tickets Sold Over Time</option>
+        <option value="RevenueOverTimeReport">Revenue Earned Over Time</option>
+        <option value="SeatTypeUsageReport">Seat Type Usage</option>
+        <option value="ShowtimePerformanceReport">Showtime Performance</option>
+    </select>
+</div>
 
 <div style="width: 50%; max-width: 600px; margin: auto;">
     <canvas id="chart"></canvas>

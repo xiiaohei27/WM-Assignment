@@ -14,7 +14,7 @@ public class ShowtimeController(DB db) : Controller
         if (movie == null) return RedirectToAction("Index", "Movie");
 
         var dates = db.Showtimes
-                      .Where(s => s.MovieId == movieId)
+                      .Where(s => s.MovieId == movieId && s.StartDateTime >= DateTime.Now)
                       .Select(s => s.StartDateTime.Date)
                       .Distinct()
                       .ToList();
@@ -31,7 +31,8 @@ public class ShowtimeController(DB db) : Controller
 
         var showtimes = db.Showtimes
                           .Where(s => s.MovieId == movieId
-                          && s.StartDateTime.Date == date)
+                          && s.StartDateTime.Date == date
+                          && s.StartDateTime >= DateTime.Now) // Only future
                           .Include(s => s.Hall)
                           .ToList();
 

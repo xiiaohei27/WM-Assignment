@@ -12,7 +12,7 @@ using static QuestPDF.Helpers.Colors;
 namespace Main.Controllers
 {
     [Authorize(Roles = "Member")]
-    public class TicketController(DB db, Helper hp) : Controller
+    public class TicketController(DB db, Helper hp, IConfiguration configuration) : Controller
     {
         // Show checkout page
         public IActionResult Checkout()
@@ -52,15 +52,31 @@ namespace Main.Controllers
             {
                 Showtime = showtime,
                 Seats = seats,
-                FoodCart = foodCart
+                FoodCart = foodCart,
+                RecaptchaToken = ""
             };
 
             return View(vm);
         }
 
         [HttpPost]
-        public IActionResult ProcessCheckout()
+        public async Task<IActionResult> ProcessCheckout(string RecaptchaToken)
         {
+            if (RecaptchaToken == null || !RecaptchaToken.Any())
+            {
+                TempData["Error"] = "Please verify that you are not a robot.";
+                return RedirectToAction("Checkout");
+            }
+
+            var secretKey = configuration["reCaptchaSettings:SecretKey"];
+            bool isHuman = await ReCaptchaService.verifyReCaptchaV2(RecaptchaToken, secretKey);
+
+            if (!isHuman)
+            {
+                TempData["Error"] = "reCAPTCHA verification failed.";
+                return RedirectToAction("Checkout");
+            }
+
             // 1. Get session data
             var showtimeId = HttpContext.Session.GetString("PendingTicketShowtimeId");
             var selectedSeatIds = HttpContext.Session

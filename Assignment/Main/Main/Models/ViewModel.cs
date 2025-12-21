@@ -167,6 +167,7 @@ public class TicketCheckoutVM
     public Showtime Showtime { get; set; }
     public List<Seat> Seats { get; set; } = new List<Seat>();
     public List<OrderCartItemVM> FoodCart { get; set; } = new List<OrderCartItemVM>();
+    public string RecaptchaToken { get; set; } = "";
 }
 
 public class OrderCartItemVM
