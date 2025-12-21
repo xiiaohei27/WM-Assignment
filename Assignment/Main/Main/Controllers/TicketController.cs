@@ -316,7 +316,7 @@ namespace Main.Controllers
                     TicketId = ticket.Id,
                     FoodItemId = item.FoodId,
                     Quantity = item.Quantity,
-                    Redeemed = false    
+                    Redeemed = false
                 });
             }
 
@@ -447,7 +447,7 @@ namespace Main.Controllers
                                .ThenInclude(tf => tf.FoodItem)
                            .FirstOrDefault(t => t.Id == id && t.UserId == user.Id);
 
-            if (ticket == null) 
+            if (ticket == null)
                 return NotFound();
 
             var vm = new BookingHistoryVM
@@ -460,12 +460,12 @@ namespace Main.Controllers
                 Showtime = ticket.Showtime.StartDateTime,
                 BookingDate = ticket.BookingDateTime,
                 FoodItems = ticket.TicketFoods.Select(tf => new OrderCartItemVM
-                      {
-                          FoodId = tf.FoodItemId,
-                          Name = tf.FoodItem.Name,
-                          Price = tf.FoodItem.Price,
-                          Quantity = tf.Quantity
-                      })
+                {
+                    FoodId = tf.FoodItemId,
+                    Name = tf.FoodItem.Name,
+                    Price = tf.FoodItem.Price,
+                    Quantity = tf.Quantity
+                })
                       .ToList(),
                 QRCodeData = $"Ticket:{ticket.Id};Movie:{ticket.Showtime.Movie.Title};Seats:{string.Join(',', ticket.TicketSeats.Select(ts => ts.Seat.SeatNumber))};Cinema:{ticket.Showtime.Hall.Cinema.Name};Time:{ticket.Showtime.StartDateTime}"
             };
