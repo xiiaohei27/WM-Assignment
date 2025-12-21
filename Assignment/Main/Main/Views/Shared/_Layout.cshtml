@@ -22,19 +22,26 @@
                 {
                     <div class="d-flex align-items-center gap-2">
                         @{
-                            var username = User.Identity?.Name;
+                            // Identity.Name contains the email (you sign in with email). Lookup the user record to get the Username.
+                            var identityName = User.Identity?.Name;
                             string? photoURL = null;
-                            if (!string.IsNullOrEmpty(username) && DB != null)
+                            string displayName;
+                            if (!string.IsNullOrEmpty(identityName) && DB != null)
                             {
-                                var user = DB.Users.Find(username);
-                                photoURL = user?.Image;
+                                var dbUser = DB.Users.FirstOrDefault(u => u.Email == identityName);
+                                photoURL = dbUser?.Image;
+                                displayName = dbUser?.Username ?? identityName;
+                            }
+                            else
+                            {
+                                displayName = identityName ?? "";
                             }
                         }
                         @if (!string.IsNullOrEmpty(photoURL))
                         {
                             <img src="/photos/@photoURL" alt="avatar" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;" />
                         }
-                        <span>@User.Identity.Name</span>
+                        <span>@displayName</span>
                         <span class="text-secondary">|</span>
                         <span>@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Member") ? "Member" : "User")</span>
                     </div>
