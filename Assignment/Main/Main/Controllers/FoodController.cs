@@ -162,22 +162,6 @@ public class FoodController : Controller
             return RedirectToAction("Index");
         }
 
-        // Get the actual User ID (not email)
-        var userEmail = User.Identity?.Name;
-        if (string.IsNullOrEmpty(userEmail))
-        {
-            TempData["Error"] = "User not authenticated.";
-            return RedirectToAction("Login", "Account");
-        }
-
-        // Find user by email to get their ID
-        var user = db.Users.FirstOrDefault(u => u.Email == userEmail);
-        if (user == null)
-        {
-            TempData["Error"] = "User not found.";
-            return RedirectToAction("Login", "Account");
-        }
-
         // Generate redemption code
         var redemptionCode = QRCodeHelper.GenerateRedemptionCode();
 
@@ -185,7 +169,7 @@ public class FoodController : Controller
         var order = new FoodOrder
         {
             Id = Guid.NewGuid().ToString(),
-            UserId = user.Id, // Use the actual user ID, not email
+            UserId = User.Identity?.IsAuthenticated == true ? User.Identity.Name : null,
             OrderDateTime = DateTime.Now,
             TotalAmount = cart.Sum(c => c.Price * c.Quantity),
             Status = "Confirmed",
@@ -222,7 +206,7 @@ public class FoodController : Controller
             var ticket = new Ticket
             {
                 Id = Guid.NewGuid().ToString(),
-                UserId = user.Id, // Use actual user ID
+                UserId = User.Identity?.IsAuthenticated == true ? User.Identity.Name : null,
                 ShowtimeId = pendingShowtimeId,
                 BookingDateTime = DateTime.Now
             };
@@ -249,15 +233,7 @@ public class FoodController : Controller
             TempData["Info"] = "Food order placed successfully!";
         }
 
-        try
-        {
-            db.SaveChanges();
-        }
-        catch (Exception ex)
-        {
-            TempData["Error"] = $"Error placing order: {ex.Message}";
-            return RedirectToAction("Cart");
-        }
+        db.SaveChanges();
 
         // Clear cart
         HttpContext.Session.Remove("FoodCart");
