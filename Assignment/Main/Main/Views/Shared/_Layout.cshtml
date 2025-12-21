@@ -2,46 +2,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewBag.Title</title>
-    <link rel="shortcut icon" href="/images/logo.png">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
-    <link rel="stylesheet" href="/css/app.css" asp-append-version="true">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="shortcut icon" href="/images/logo.png" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="/css/app.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
     @RenderSection("head", false)
 </head>
 <body>
-    <header>
-        <h1><a href="/">Silver Screen Cinema</a></h1>
+    <header class="site-header bg-light border-bottom">
+        <div class="container d-flex align-items-center py-2">
+            <h1 class="h5 mb-0 me-3"><a class="text-dark text-decoration-none" href="/">Silver Screen Cinema</a></h1>
 
-        @* User email and role *@
-        @if (User.Identity!.IsAuthenticated)
-        {
-            <div>
-                @User.Identity.Name |
-                @(User.IsInRole("Admin") ? "Admin" : "")
-                @(User.IsInRole("Member") ? "Member" : "")
+            <div class="ms-auto d-flex align-items-center gap-3 small text-muted d-none d-md-flex">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <div class="d-flex align-items-center gap-2">
+                        @{
+                            var username = User.Identity?.Name;
+                            string? photoURL = null;
+                            if (!string.IsNullOrEmpty(username) && DB != null)
+                            {
+                                var user = DB.Users.Find(username);
+                                photoURL = user?.Image;
+                            }
+                        }
+                        @if (!string.IsNullOrEmpty(photoURL))
+                        {
+                            <img src="/photos/@photoURL" alt="avatar" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;" />
+                        }
+                        <span>@User.Identity.Name</span>
+                        <span class="text-secondary">|</span>
+                        <span>@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("Member") ? "Member" : "User")</span>
+                    </div>
+                }
             </div>
-        }
+        </div>
+    </header>
 
-        @* Member photo *@
-        @if (User.IsInRole("Member"))
-        {
-            var username = User.Identity?.Name;
-            string? photoURL = null;
-            if (!string.IsNullOrEmpty(username) && DB != null)
-            {
-                var user = DB.Users.Find(username);
-                photoURL = user?.Image;
-            }
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <div class="navbar-collapse collapse show">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Movie" asp-action="Index"><i class="bi bi-film"></i> Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Food" asp-action="Index"><i class="bi bi-cup-straw"></i> Food &amp; Beverage</a>
+                    </li>
+                    <li class="nav-item position-relative">
+                        @{
+                            var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
+                            var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
+                        }
+                        <a class="nav-link" asp-controller="Food" asp-action="Cart">
+                            <i class="bi bi-cart"></i> Cart
+                            @if (cartCount > 0)
+                            {
+                                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">@cartCount</span>
+                            }
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Ticket" asp-action="History"><i class="bi bi-clock-history"></i> History</a>
+                    </li>
 
-            if (!string.IsNullOrEmpty(photoURL))
-            {
-                <img src="/photos/@photoURL" alt="Member photo">
-            }
-        }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Admin" asp-action="Dashboard"><i class="bi bi-speedometer2"></i> Admin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Admin" asp-action="Report"><i class="bi bi-bar-chart"></i> Report</a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Member"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="UpdateProfile"><i class="bi bi-person-circle"></i> Profile</a>
+                        </li>
+                    }
+                </ul>
+
+                @* Right-side auth links: placed at the end of navbar container *@
+                <ul class="navbar-nav ms-auto align-items-center">
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/UpdatePassword"><i class="bi bi-key"></i> Change Password</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/Logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link" href="/Account/Login"><i class="bi bi-box-arrow-in-right"></i> Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/Account/Register"><i class="bi bi-person-plus"></i> Register</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/Account/ForgotPassword"><i class="bi bi-question-circle"></i> Forgot Password</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-4">
+        <h1 class="h3 mb-4">@ViewBag.Title</h1>
 
         @if (TempData["Info"] != null)
         {
@@ -49,14 +122,12 @@
                 @Html.Raw(TempData["Info"])
             </div>
         }
-
         @if (TempData["Warning"] != null)
         {
             <div class="alert alert-warning fade-alert">
                 @Html.Raw(TempData["Warning"])
             </div>
         }
-
         @if (TempData["Error"] != null)
         {
             <div class="alert alert-danger fade-alert">
@@ -69,146 +140,14 @@
                 @Html.Raw(TempData["Success"])
             </div>
         }
-    </header>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <div class="navbar-nav me-auto">
-                <a class="nav-link" href="/">
-                    <i class="bi bi-house"></i> Home
-                </a>
-                <a class="nav-link" asp-controller="Movie" asp-action="Index">
-                    <i class="bi bi-film"></i> Movies
-                </a>
-                <a class="nav-link" asp-controller="Food" asp-action="Index">
-                    <i class="bi bi-cup-straw"></i> Food & Beverage
-                </a>
-
-                @* Cart Icon with Badge *@
-                @{
-                    var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
-                    var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
-                }
-                <a class="nav-link position-relative" asp-controller="Food" asp-action="Cart">
-                    <i class="bi bi-cart"></i> Cart
-                    @if (cartCount > 0)
-                    {
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            @cartCount
-                        </span>
-                    }
-                </a>
-
-                <a class="nav-link position-relative" asp-controller="Ticket" asp-action="History">
-                    <i class="bi bi-clock-history"></i> History
-                </a>
-
-                @* Simple Admin Button - Goes directly to Dashboard *@
-                @if (User.IsInRole("Admin"))
-                {
-                    <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">
-                        <i class="bi bi-speedometer2"></i> Admin
-                    </a>
-
-                    <a class="nav-link" asp-controller="Admin" asp-action="Report">
-                        <i class="bi bi-speedometer2"></i> Report
-                    </a>
-                }
-
-                @* Member Menu *@
-                @if (User.IsInRole("Member"))
-                {
-                    <a class="nav-link" asp-controller="Account" asp-action="UpdateProfile">
-                        <i class="bi bi-person-circle"></i> Profile
-                    </a>
-                }
-            </div>
-
-            @* Authentication Links - Right Side *@
-            <div class="navbar-nav ms-auto">
-                @if (User.Identity != null && User.Identity.IsAuthenticated)
-                {
-                    <a class="nav-link" href="/Account/UpdatePassword">
-                        <i class="bi bi-key"></i> Change Password
-                    </a>
-                    <a class="nav-link" href="/Account/Logout">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
-                }
-                else
-                {
-                    <a class="nav-link" href="/Account/Login">
-                        <i class="bi bi-box-arrow-in-right"></i> Login
-                    </a>
-                    <a class="nav-link" href="/Account/Register">
-                        <i class="bi bi-person-plus"></i> Register
-                    </a>
-                    <a class="nav-link" href="/Account/ForgotPassword">
-                        <i class="bi bi-question-circle"></i> Forgot Password
-                    </a>
-                }
-            </div>
-        </div>
-    </nav>
-
-    <main>
-        <h1 class="container my-4">@ViewBag.Title</h1>
         @RenderBody()
     </main>
 
-    <style>
-        .fade-alert {
-            transition: opacity 0.5s ease, max-height 0.5s ease;
-            opacity: 1;
-            max-height: 200px;
-            overflow: hidden;
-        }
-
-        /* Navigation styling */
-        .navbar {
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .navbar-nav .nav-link {
-            color: rgba(255, 255, 255, 0.85) !important;
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
-        }
-
-            .navbar-nav .nav-link:hover {
-                color: rgba(255, 255, 255, 1) !important;
-                background-color: rgba(255, 255, 255, 0.1);
-                border-radius: 4px;
-            }
-
-            .navbar-nav .nav-link i {
-                margin-right: 5px;
-            }
-
-        /* Cart badge positioning fix */
-        .nav-link.position-relative {
-            padding-right: 2rem !important;
-        }
-
-        /* Main content styling */
-        main {
-			flex: 1;
-            padding: 20px 0;
-        }
-
-        /* Footer styling */
-        footer {
-            margin-top: 0;
-            padding: 20px 0;
-            background-color: #f8f9fa;
-            border-top: 1px solid #dee2e6;
-        }
-    </style>
-
-    <footer>
-        Developed by <b>Team RSD</b> &middot;
-        Copyrighted &copy; @DateTime.Today.Year
+    <footer class="bg-light border-top py-3 mt-auto">
+        <div class="container text-center small">
+            Developed by <strong>Team RSD</strong> &middot; Copyright &copy; @DateTime.Today.Year
+        </div>
     </footer>
 
     <script src="/js/jquery.min.js"></script>
@@ -233,16 +172,16 @@
                         setTimeout(() => {
                             if (alert.parentNode) alert.parentNode.removeChild(alert);
                         }, 500);
-                    }, 2500);
+                    }, 3000);
                 });
             } catch (e) {
                 console.error('Alert timeout error:', e);
             }
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-            crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
     @RenderSection("foot", false)
     @RenderSection("Scripts", required: false)
 </body>

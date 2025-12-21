@@ -4,27 +4,31 @@
     ViewBag.Title = "Account | Update Profile";
 }
 
-<form class="form" method="post" enctype="multipart/form-data">
-    <div asp-validation-summary="ModelOnly"></div>
+<div class="card card-form">
+    <form class="form" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
-    <label asp-for="Email"></label>
-    <b>@Model.Email</b>
-    <br>
+        <div class="profile-avatar">
+            <div>
+                <label asp-for="Image" class="upload">
+                    <small class="d-block text-muted">Select Photo...</small>
+                    <input asp-for="Image" accept="image/jpeg,image/png" hidden />
+                    <img src="/photos/@Model.ImageURL" alt="avatar" />
+                </label>
+            </div>
+            <div class="flex-fill">
+                <label class="form-label">Email</label>
+                <div class="mb-3"><strong>@Model.Email</strong></div>
 
-    <label asp-for="Username"></label>
-    <input asp-for="Username" autofocus>
-    <span asp-validation-for="Username"></span>
+                <label asp-for="Username" class="form-label">Username</label>
+                <input asp-for="Username" class="form-control" autofocus />
+                <span asp-validation-for="Username" class="text-danger small"></span>
+            </div>
+        </div>
 
-    <label asp-for="Image"></label>
-    <label class="upload">
-        <small>Select Photo...</small>
-        <input asp-for="Image" accept="image/jpeg,image/png" hidden>
-        <img src="/photos/@Model.ImageURL">
-    </label>
-    <span asp-validation-for="Image"></span>
-
-    <section>
-        <button>Update</button>
-        <button type="reset">Reset</button>
-    </section>
-</form>
+        <section>
+            <button type="submit" class="btn btn-primary me-2">Update</button>
+            <button type="reset" class="btn btn-secondary">Reset</button>
+        </section>
+    </form>
+</div>
