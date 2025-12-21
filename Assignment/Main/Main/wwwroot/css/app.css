@@ -798,3 +798,13 @@ footer {
         margin-bottom: 10px;
     }
 }
+
+/* Captcha Checkbox */
+.recaptcha-box {
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px; /* square-ish, slightly rounded */
+    background-color: #fff;
+    display: inline-block;
+}
+

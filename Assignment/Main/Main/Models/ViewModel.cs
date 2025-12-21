@@ -41,6 +41,8 @@ public class RegisterVM
     public string Username { get; set; }
 
     public IFormFile Image { get; set; }
+
+    public string RecaptchaToken { get; set; } = "";
 }
 
 public class UpdatePasswordVM
@@ -284,6 +286,24 @@ public class RevenueVM
 public class TicketsOverTimeVM
 {
     public string Date { get; set; }
+    public int TicketsSold { get; set; }
+}
+
+public class RevenueOverTimeVM
+{
+    public string Date { get; set; }
+    public decimal Revenue { get; set; }
+}
+
+public class SeatTypeUsageVM
+{
+    public string SeatType { get; set; }
+    public int Count { get; set; }
+}
+
+public class ShowtimePerformanceVM
+{
+    public string Showtime { get; set; }
     public int TicketsSold { get; set; }
 }
 

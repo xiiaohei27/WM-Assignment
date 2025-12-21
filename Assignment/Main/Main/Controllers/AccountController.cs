@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Main.Controllers;
 
-public class AccountController(DB db, Helper hp, IEmailService emailService) : Controller
+public class AccountController(DB db, Helper hp, IEmailService emailService, IConfiguration configuration) : Controller
 {
     // GET: Account/Login
     public IActionResult Login()
@@ -101,8 +101,23 @@ public class AccountController(DB db, Helper hp, IEmailService emailService) : C
 
     // POST: Account/Register
     [HttpPost]
-    public async Task<IActionResult> Register(RegisterVM vm)
+    public async Task<IActionResult> Register(RegisterVM vm, string RecaptchaToken)
     {
+        if (RecaptchaToken == null || !RecaptchaToken.Any())
+        {
+            TempData["Error"] = "Please verify that you are not a robot.";
+            return RedirectToAction("Register");
+        }
+
+        var secretKey = configuration["reCaptchaSettings:SecretKey"];
+        bool isHuman = await ReCaptchaService.verifyReCaptchaV2(RecaptchaToken, secretKey);
+
+        if (!isHuman)
+        {
+            TempData["Error"] = "reCAPTCHA verification failed.";
+            return RedirectToAction("Register");
+        }
+
         if (ModelState.GetFieldValidationState("Email") != ModelValidationState.Invalid &&
             db.Users.Any(u => u.Email == vm.Email))
         {

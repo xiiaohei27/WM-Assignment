@@ -1,11 +1,13 @@
 ﻿@model RegisterVM
+@inject IConfiguration configuration
 
 @{
     ViewBag.Title = "Account | Register";
+    var siteKey = configuration["reCaptchaSettings:SiteKey"];
 }
 
 <form class="form" method="post" enctype="multipart/form-data">
-    <div asp-validation-summary="ModelOnly"></div>
+    <div asp-validation-summary="All"></div>
 
     <label asp-for="Email"></label>
     <input asp-for="Email" autofocus>
@@ -31,8 +33,17 @@
     </label>
     <span asp-validation-for="Image"></span>
 
+    <input type="hidden" id="recaptchaToken" asp-for="RecaptchaToken" />
+
+    @* reCaptcha Checkbox *@
+    <div class="card mb-4 shadow-sm text-center">
+        <div class="recaptcha-box">
+            <div id="html_element"></div>
+        </div>
+    </div>
+
     <section>
-        <button>Register</button>
+        <button type="submit">Register</button>
         <button type="reset">Reset</button>
     </section>
 </form>
@@ -42,3 +53,18 @@
         $.validator.setDefaults({ ignore: '' });
     </script>
 }
+
+<script>
+    var onloadCallback = function () {
+        grecaptcha.render('html_element', {
+            sitekey: '@siteKey',
+            callback: function (token) {
+                document.getElementById("recaptchaToken").value = token;
+            }
+        });
+    };
+</script>
+
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+        async defer>
+</script>

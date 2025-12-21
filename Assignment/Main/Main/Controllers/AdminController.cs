@@ -834,7 +834,11 @@ public class AdminController(DB db, Helper hp) : Controller
     {
         var data = db.Tickets
             .GroupBy(t => t.BookingDateTime.Date)
-            .Select(g => new { date = g.Key.ToString("yyyy-MM-dd"), ticketsSold = g.Count() })
+            .Select(g => new TicketsOverTimeVM
+            {
+                Date = g.Key.ToString("yyyy-MM-dd"),
+                TicketsSold = g.Count()
+            })
             .ToList();
 
         return Json(data);
@@ -845,10 +849,16 @@ public class AdminController(DB db, Helper hp) : Controller
     {
         var data = db.Tickets
             .Include(t => t.TicketSeats)
-            .Include(t => t.Showtime)
+                .ThenInclude(ts => ts.Seat)
+            .Include(t => t.Showtime) 
             .AsEnumerable()
             .GroupBy(t => t.BookingDateTime.Date)
-            .Select(g => new { date = g.Key.ToString("yyyy-MM-dd"), revenue = g.Sum(t => t.TicketSeats.Sum(ts => t.Showtime.TicketPrice)) })
+            .Select(g => new RevenueOverTimeVM
+            {
+                Date = g.Key.ToString("yyyy-MM-dd"),
+                Revenue = g.Sum(t =>
+                    t.TicketSeats.Sum(ts => t.Showtime.TicketPrice * ts.Seat.Multiplier))
+            })
             .ToList();
 
         return Json(data);
@@ -860,7 +870,11 @@ public class AdminController(DB db, Helper hp) : Controller
         var data = db.TicketSeats
             .Include(ts => ts.Seat)
             .GroupBy(ts => ts.Seat.SeatType)
-            .Select(g => new { seatType = g.Key, count = g.Count() })
+            .Select(g => new SeatTypeUsageVM
+            {
+                SeatType = g.Key,
+                Count = g.Count()
+            })
             .ToList();
 
         return Json(data);
@@ -872,7 +886,11 @@ public class AdminController(DB db, Helper hp) : Controller
         var data = db.Tickets
             .Include(t => t.Showtime)
             .GroupBy(t => t.Showtime.StartDateTime)
-            .Select(g => new { showtime = g.Key.ToString("yyyy-MM-dd HH:mm"), ticketsSold = g.Count() })
+            .Select(g => new ShowtimePerformanceVM
+            {
+                Showtime = g.Key.ToString("yyyy-MM-dd HH:mm"),
+                TicketsSold = g.Count()
+            })
             .ToList();
 
         return Json(data);
