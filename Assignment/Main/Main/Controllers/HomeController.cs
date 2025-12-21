@@ -10,6 +10,11 @@ public class HomeController(DB db) : Controller
     // GET: Home/Index
     public IActionResult Index()
     {
+        if (User.IsInRole("Admin"))
+        {
+            return RedirectToAction("Dashboard", "Admin");
+        }
+
         // Get the first featured movie that has at least one showtime
         var featured = db.Movies
                          .Include(m => m.Showtimes) // include showtimes
