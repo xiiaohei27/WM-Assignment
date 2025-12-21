@@ -82,6 +82,9 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Ticket" asp-action="History"><i class="bi bi-clock-history"></i> History</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Food" asp-action="MyOrders"><i class="bi bi-clock-history"></i> Order History</a>
+                        </li>
                     }
 
                     @if (User.IsInRole("Admin"))
