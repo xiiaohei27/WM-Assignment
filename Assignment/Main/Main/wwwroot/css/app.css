@@ -426,3 +426,375 @@ label > * {
     cursor: pointer;
     user-select: none;
 }
+
+/* Typography and base */
+body {
+    font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+header {
+    background: linear-gradient(90deg, #0d6efd22, transparent);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+header h1 a {
+    color: #212529;
+    text-decoration: none;
+}
+header > div {
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+/* Member avatar in header */
+header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-left: 8px;
+    border: 2px solid #fff;
+}
+
+/* Alerts (moved from inline) */
+.fade-alert {
+    transition: opacity 0.5s ease, max-height 0.5s ease;
+    opacity: 1;
+    max-height: 200px;
+    overflow: hidden;
+}
+
+/* Navbar tweaks */
+.navbar {
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.92) !important;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+.navbar-nav .nav-link:hover {
+    color: rgba(255, 255, 255, 1) !important;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+}
+.navbar-nav .nav-link i { margin-right: 6px; }
+
+/* Cart badge fix */
+.nav-link.position-relative { padding-right: 2rem !important; }
+
+/* Main & Footer */
+main {
+    flex: 1;
+    padding: 20px 0;
+}
+footer {
+    margin-top: 0;
+    padding: 20px 0;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+}
+
+/* Global form styling (used by Account forms) */
+.form {
+    max-width: 540px;
+    margin: 0 auto 30px;
+    padding: 18px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.form label {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.form input[type="text"],
+.form input[type="email"],
+.form input[type="password"],
+.form input[type="file"],
+.form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: #fff;
+    box-sizing: border-box;
+}
+.form section {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+    margin-top: 8px;
+}
+.form button {
+    background: #0d6efd;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.form button[type="reset"] {
+    background: #6c757d;
+}
+
+/* Upload/Avatar control */
+label.upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px dashed #ced4da;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+label.upload small { font-size: 0.85rem; color: #6c757d; }
+label.upload img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+label.upload input[type="file"] { display: none; }
+/* Profile specific (UpdateProfile view uses .form and label.upload) */
+.profile-avatar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.profile-avatar img {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid #f1f1f1;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    header { padding: 10px; }
+    .form { padding: 12px; width: 94%; }
+    label.upload img { width: 64px; height: 64px; }
+}
+
+/* Bootstrap-friendly overrides and layout improvements */
+
+/* Base typography */
+body, input, select, textarea, button {
+    font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-size: 16px;
+}
+
+/* Page layout tuned for container use */
+.site-header {
+    background: #f8f9fa;
+}
+.navbar {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Alerts */
+.fade-alert {
+    transition: opacity 0.5s ease, max-height 0.5s ease;
+    opacity: 1;
+    max-height: 200px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+/* Navbar icons and spacing */
+.navbar .nav-link i {
+    margin-right: .5rem;
+    vertical-align: -2px;
+}
+
+/* Avatar (header) */
+.site-header img.rounded-circle {
+    border-radius: 50%;
+    border: 1px solid #e9ecef;
+    object-fit: cover;
+}
+
+/* Form card (used on account pages) */
+.card-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    border-radius: .5rem;
+    background: #fff;
+    box-shadow: 0 8px 30px rgba(17, 24, 39, 0.06);
+}
+
+/* Generic form spacing mapped to bootstrap look */
+.form .form-control {
+    margin-bottom: .75rem;
+}
+
+/* Upload / avatar */
+label.upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px dashed #ced4da;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #fff;
+}
+label.upload img {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+/* Profile avatar preview (bigger) */
+.profile-avatar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 1rem;
+}
+.profile-avatar img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: .5rem;
+    border: 2px solid #f1f1f1;
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+    .profile-avatar { gap: 12px; }
+    label.upload img { width: 72px; height: 72px; }
+}
+
+/* Keep footer tidy */
+footer {
+    background: transparent;
+}
+
+.card.card-form {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-form .form {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+}
+
+.card-form .profile-avatar {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.card-form label {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.card-form .form-control {
+    padding: 12px 15px;
+    font-size: 16px;
+}
+
+.card-form button {
+    padding: 10px 15px;
+    font-size: 16px;
+}
+
+.card-form small {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* Specific tweaks for Update Profile form */
+.profile-avatar img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid #ddd;
+    object-fit: cover;
+}
+
+.upload {
+    border: 2px dashed #007bff;
+    padding: 8px;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    text-align: center;
+}
+
+.upload img {
+    width: 100%;
+    height: auto;
+    max-width: 150px;
+    max-height: 150px;
+    margin: 0 auto;
+    border-radius: 0.5rem;
+    border: 2px solid #007bff;
+}
+
+.text-danger {
+    font-size: 0.875rem;
+    margin-top: -6px;
+    margin-bottom: 10px;
+}
+
+.fade-alert {
+    transition: opacity 0.5s ease, max-height 0.5s ease;
+    opacity: 1;
+    max-height: 0;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.fade-alert.show {
+    max-height: 200px;
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-form .form {
+        grid-template-columns: 1fr;
+    }
+    .card-form .profile-avatar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .card-form .profile-avatar img {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 10px;
+    }
+}

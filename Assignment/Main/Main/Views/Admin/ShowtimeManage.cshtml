@@ -19,7 +19,7 @@
             <form method="get" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Movie</label>
-                    <select name="movieId" class="form-select" onchange="this.form.submit()">
+                    <select id="movieSelector" name="movieId" class="form-select">
                         <option value="">All Movies</option>
                         @foreach (var movie in ViewBag.Movies)
                         {
@@ -31,17 +31,14 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Search</label>
-                    <input type="text" name="search" class="form-control"
+                    <input type="text" id="searchInput" name="search" class="form-control"
                            placeholder="Search by name..." value="@ViewBag.Search">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                        @if (!string.IsNullOrEmpty(ViewBag.Search) || !string.IsNullOrEmpty(ViewBag.SelectedGenre))
-                        {
-                            <a asp-action="ShowtimeManage" class="btn btn-outline-secondary">Clear</a>
-                        }
+                        <button type="button" id="filterBtn" class="btn btn-primary">Filter</button>
+                        <button type="button" id="clearBtn" class="btn btn-outline-secondary">Clear</button>
                     </div>
                 </div>
             </form>
@@ -60,6 +57,7 @@
                             <th>StartDateTime</th>
                             <th>EndDateTime</th>
                             <th>TicketPrice</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,3 +114,60 @@
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        function loadShowtimes() {
+            var movieId = $('#movieSelector').val();
+            var search = $('#searchInput').val();
+
+            $.get('/Admin/GetShowtimeByFilter', {
+                movieId: movieId,
+                search: search
+            }, function (data) {
+
+                var tbody = $('table tbody');
+                tbody.empty();
+
+                if (!data || data.length === 0) {
+                    tbody.append('<tr><td colspan="7" class="text-center">No Showtime found.</td></tr>');
+                    return;
+                }
+
+                data.forEach(function (s) {
+
+                    var imageHtml = s.image
+                        ? '<img src="/images/' + s.image + '" class="rounded" style="width:50px;height:50px;object-fit:cover;">'
+                        : '<div class="bg-secondary rounded d-flex align-items-center justify-content-center"style="width:50px;height:50px;"><span class="text-white">N/A</span> </div>';
+
+					tbody.append('<tr>' +
+                            '<td>' + imageHtml + '</td>' +
+                            '<td><strong>'+ s.movieTitle +'</strong></td>'+
+                            '<td>'+ s.hallId +'</td>' +
+                            '<td><strong>'+ new Date(s.startDateTime).toLocaleString() +'</strong></td>' +
+                            '<td><strong>'+ new Date(s.endDateTime).toLocaleString() +'</strong></td>' +
+                            '<td>RM ' + parseFloat(s.ticketPrice).toFixed(2) +'</td>' +
+							'<td>' +
+                                '<a href="/Admin/EditShowtime/'+ s.id +'" class="btn btn-sm btn-primary">Edit</a>' +
+                                '<a href="/Admin/DeleteShowtime/'+ s.id +'" class="btn btn-sm btn-danger">Delete</a>' +
+                            '</td>'+
+                        '</tr>');
+                });
+            });
+        }
+
+        // 🔴 Real-time events
+        $('#movieSelector').on('change', loadShowtimes);
+        $('#searchInput').on('input', loadShowtimes);
+
+
+        $('#filterBtn').click(loadShowtimes);
+        $('#clearBtn').click(function() {
+            $('#movieSelector').val('');
+            $('#searchInput').val('');
+            loadShowtimes();
+        });
+    });
+</script>

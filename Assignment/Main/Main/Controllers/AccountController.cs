@@ -396,7 +396,7 @@ public class AccountController(DB db, Helper hp, IEmailService emailService) : C
             return View(vm);
         }
 
-        var u = db.Users.Find(User.Identity!.Name);
+        var u = db.Users.FirstOrDefault(u => u.Email == User.Identity!.Name);
         if (u == null)
         {
             TempData["Error"] = "User not found.";
@@ -426,7 +426,9 @@ public class AccountController(DB db, Helper hp, IEmailService emailService) : C
     [Authorize(Roles = "Member")]
     public IActionResult UpdateProfile()
     {
-        var m = db.Users.Find(User.Identity!.Name);
+        // Use FirstOrDefault with Email instead of Find with Id
+        var m = db.Users.OfType<Member>().FirstOrDefault(u => u.Email == User.Identity!.Name);
+
         if (m == null) return RedirectToAction("Index", "Home");
 
         var vm = new UpdateProfileVM
@@ -444,7 +446,9 @@ public class AccountController(DB db, Helper hp, IEmailService emailService) : C
     [HttpPost]
     public IActionResult UpdateProfile(UpdateProfileVM vm)
     {
-        var m = db.Users.Find(User.Identity!.Name);
+        // Use FirstOrDefault with Email instead of Find with Id
+        var m = db.Users.OfType<Member>().FirstOrDefault(u => u.Email == User.Identity!.Name);
+
         if (m == null) return RedirectToAction("Index", "Home");
 
         if (vm.Image != null)
@@ -473,4 +477,5 @@ public class AccountController(DB db, Helper hp, IEmailService emailService) : C
         vm.ImageURL = m.Image;
         return View(vm);
     }
+
 }
