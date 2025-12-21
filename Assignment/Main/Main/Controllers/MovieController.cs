@@ -29,7 +29,9 @@ public class MovieController(DB db) : Controller
     [Authorize(Roles = "Member")]
     public IActionResult Detail(string id)
     {
-        var movie = db.Movies.Find(id); // Fetch movie by id.
+        var movie = db.Movies 
+                    .Include(m => m.Showtimes)
+                    .FirstOrDefault(m => m.Id == id); // Fetch movie + showtimes.
         if (movie == null) return RedirectToAction("Index", "Home"); // If not found, go back to Home/Index.
 
         return View(movie);

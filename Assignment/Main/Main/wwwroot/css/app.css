@@ -427,6 +427,17 @@ label > * {
     user-select: none;
 }
 
+/* Captcha Checkbox */
+.recaptcha-box {
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 0;
+    background-color: #fff;
+    display: inline-block;
+    text-align: center;
+    margin: 0 auto;
+}
+
 /* Typography and base */
 body {
     font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
