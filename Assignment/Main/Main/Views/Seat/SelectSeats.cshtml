@@ -16,6 +16,12 @@
     // Group seats by row letter
     .GroupBy(s => s.SeatNumber[0].ToString())
     .ToList();
+
+    decimal regularPrice = showtime.TicketPrice;
+    var coupleSeat = Model.FirstOrDefault(s => s.SeatType == "Couple");
+    decimal couplePrice = coupleSeat != null
+        ? showtime.TicketPrice * coupleSeat.Multiplier
+        : 0;
 }
 
 <div class="container my-4">
@@ -53,6 +59,14 @@
                     }
                 </div>
             </div>
+        </div>
+
+        <div class="seat-legend text-center mt-3">
+            <span class="me-4">
+                <strong>Regular:</strong>  <span class="text-decoration-underline">RM @regularPrice.ToString("F2")</span>
+            
+                <strong>Couple:</strong><span class="text-decoration-underline">RM @couplePrice.ToString("F2")</span>
+            </span>
         </div>
 
         <div class="d-flex justify-content-between mt-4">

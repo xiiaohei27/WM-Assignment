@@ -37,6 +37,8 @@
                 <!-- Description -->
                 <h4>Description</h4>
                 <p>@Model.Description</p>
+
+                <h3>Ticket Price: <span class="text-decoration-underline">@Model.Showtimes.FirstOrDefault()?.TicketPrice</span></h3>
             </div>
         </div>
     </div>

@@ -29,6 +29,7 @@
                             <tr>
                                 <th>Seat</th>
                                 <th>Type</th>
+                                <th>Multiplier</th>
                                 <th>Ticket Price</th>
                                 <th>Subtotal</th>
                             </tr>
@@ -40,6 +41,7 @@
                                 <tr>
                                     <td>@seat.SeatNumber</td>
                                     <td>@seat.SeatType</td>
+                                    <td>@seat.Multiplier</td>
                                     <td>RM @(Model.Showtime.TicketPrice.ToString("F2"))</td>
                                     <td>RM @(seatPrice.ToString("F2"))</td>
                                 </tr>
