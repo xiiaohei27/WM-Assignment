@@ -863,6 +863,7 @@ public class AdminController(DB db, Helper hp) : Controller
     {
         var data = db.Tickets
             .GroupBy(t => t.BookingDateTime.Date)
+            .OrderBy(g => g.Key)
             .Select(g => new TicketsOverTimeVM
             {
                 Date = g.Key.ToString("yyyy-MM-dd"),
@@ -882,6 +883,7 @@ public class AdminController(DB db, Helper hp) : Controller
             .Include(t => t.Showtime) 
             .AsEnumerable()
             .GroupBy(t => t.BookingDateTime.Date)
+            .OrderBy(g => g.Key)
             .Select(g => new RevenueOverTimeVM
             {
                 Date = g.Key.ToString("yyyy-MM-dd"),
@@ -899,6 +901,7 @@ public class AdminController(DB db, Helper hp) : Controller
         var data = db.TicketSeats
             .Include(ts => ts.Seat)
             .GroupBy(ts => ts.Seat.SeatType)
+            .OrderBy(g => g.Key)
             .Select(g => new SeatTypeUsageVM
             {
                 SeatType = g.Key,
@@ -915,6 +918,7 @@ public class AdminController(DB db, Helper hp) : Controller
         var data = db.Tickets
             .Include(t => t.Showtime)
             .GroupBy(t => t.Showtime.StartDateTime)
+            .OrderBy(g => g.Key)
             .Select(g => new ShowtimePerformanceVM
             {
                 Showtime = g.Key.ToString("yyyy-MM-dd HH:mm"),
