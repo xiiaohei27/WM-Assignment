@@ -18,14 +18,7 @@
                         <option value="">All Categories</option>
                         @foreach (var cat in categories)
                         {
-                            @if (selectedCategoryId == cat.Id)
-                            {
-                                <option value="@cat.Id" selected>@cat.Name</option>
-                            }
-                            else
-                            {
-                                <option value="@cat.Id">@cat.Name</option>
-                            }
+                            <option value="@cat.Id" @(selectedCategoryId == cat.Id ? "selected" : "")>@cat.Name</option>
                         }
                     </select>
                 </div>
