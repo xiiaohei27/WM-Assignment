@@ -9,63 +9,70 @@
 <div class="auth-wrapper container my-5">
     <div class="card auth-card mx-auto">
         <div class="card-body">
-            <h4 class="card-title text-center mb-3">Create an account</h4>
+            <h4 class="card-title text-center mb-4">Create an account</h4>
 
             <form class="needs-validation" method="post" enctype="multipart/form-data" novalidate>
-                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
+                <!-- Email Field -->
                 <div class="mb-3">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control" />
+                    <label asp-for="Email" class="form-label">Email Address</label>
+                    <input asp-for="Email" class="form-control" placeholder="Enter your email" />
                     <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
 
-                <div class="row g-2">
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" />
+                <!-- Password Fields Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <input asp-for="Password" class="form-control" placeholder="Create password" />
                         <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Confirm" class="form-label"></label>
-                        <input asp-for="Confirm" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="Confirm" class="form-label">Confirm Password</label>
+                        <input asp-for="Confirm" class="form-control" placeholder="Confirm password" />
                         <span asp-validation-for="Confirm" class="text-danger small"></span>
                     </div>
                 </div>
 
+                <!-- Username Field -->
                 <div class="mb-3">
-                    <label asp-for="Username" class="form-label"></label>
-                    <input asp-for="Username" class="form-control" />
+                    <label asp-for="Username" class="form-label">Username</label>
+                    <input asp-for="Username" class="form-control" placeholder="Choose a username" />
                     <span asp-validation-for="Username" class="text-danger small"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Photo</label>
-                    <label class="upload d-inline-block">
-                        <small class="d-block text-muted mb-2">Select Photo...</small>
+                <!-- Photo Upload -->
+                <div class="mb-4">
+                    <label class="form-label">Profile Photo</label>
+                    <label class="upload d-block">
+                        <small class="d-block text-muted mb-2">Click to select a photo</small>
                         <input asp-for="Image" accept="image/jpeg,image/png" class="form-control-file" hidden />
                         <img id="register-preview" src="/images/photo.jpg" alt="preview" class="upload-preview" />
                     </label>
                     <span asp-validation-for="Image" class="text-danger small d-block mt-2"></span>
                 </div>
 
-    <input type="hidden" id="recaptchaToken" asp-for="RecaptchaToken" />
+                <!-- Hidden reCAPTCHA Token -->
+                <input type="hidden" id="recaptchaToken" asp-for="RecaptchaToken" />
 
-    @* reCaptcha Checkbox *@
-    <div class="card mb-4 shadow-sm text-center">
-        <div class="recaptcha-box">
-            <div id="html_element"></div>
-        </div>
-    </div>
+                <!-- reCAPTCHA Checkbox -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="recaptcha-box">
+                        <div id="html_element"></div>
+                    </div>
+                </div>
 
-    <section>
-        <button type="submit">Register</button>
-        <button type="reset">Reset</button>
-    </section>
-</form>
+                <!-- Action Buttons -->
+                <section class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">Register</button>
+                    <button type="reset" class="btn btn-secondary btn-lg px-5">Reset</button>
+                </section>
+            </form>
 
-            <div class="text-center mt-3 small">
-                Already have an account? <a href="/Account/Login">Login</a>
+            <!-- Login Link -->
+            <div class="text-center mt-4 small">
+                Already have an account? <a href="/Account/Login" class="fw-bold">Login here</a>
             </div>
         </div>
     </div>
@@ -73,20 +80,41 @@
 
 @section foot {
     <script>
-        // keep unobtrusive validation including file inputs
+        // Keep unobtrusive validation including file inputs
         $.validator.setDefaults({ ignore: '' });
 
         // Preview selected image
         document.addEventListener('DOMContentLoaded', function () {
             const fileInput = document.querySelector('input[type="file"][asp-for="Image"], input[type="file"][name="Image"]') || document.querySelector('input[type="file"]');
             const preview = document.getElementById('register-preview');
+
             if (!fileInput || !preview) return;
+
             fileInput.addEventListener('change', function (e) {
                 const f = e.target.files && e.target.files[0];
                 if (!f) {
                     preview.src = '/images/photo.jpg';
                     return;
                 }
+
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                if (!validTypes.includes(f.type)) {
+                    alert('Please select a valid image file (JPEG or PNG)');
+                    fileInput.value = '';
+                    preview.src = '/images/photo.jpg';
+                    return;
+                }
+
+                // Validate file size (max 5MB)
+                const maxSize = 5 * 1024 * 1024;
+                if (f.size > maxSize) {
+                    alert('File size must be less than 5MB');
+                    fileInput.value = '';
+                    preview.src = '/images/photo.jpg';
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function (ev) {
                     preview.src = ev.target.result;
@@ -95,7 +123,7 @@
             });
         });
 
-        // bootstrap validation helper
+        // Bootstrap validation helper
         (function () {
             'use strict'
             var forms = document.querySelectorAll('.needs-validation')
@@ -110,19 +138,25 @@
             })
         })()
     </script>
+
+    <!-- Google reCAPTCHA Script -->
+    <script>
+        var onloadCallback = function () {
+            grecaptcha.render('html_element', {
+                sitekey: '@siteKey',
+                callback: function (token) {
+                    document.getElementById("recaptchaToken").value = token;
+                    console.log('reCAPTCHA verified');
+                },
+                'expired-callback': function() {
+                    document.getElementById("recaptchaToken").value = '';
+                    console.log('reCAPTCHA expired');
+                }
+            });
+        };
+    </script>
+
+    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+            async defer>
+    </script>
 }
-
-<script>
-    var onloadCallback = function () {
-        grecaptcha.render('html_element', {
-            sitekey: '@siteKey',
-            callback: function (token) {
-                document.getElementById("recaptchaToken").value = token;
-            }
-        });
-    };
-</script>
-
-<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
-        async defer>
-</script>
