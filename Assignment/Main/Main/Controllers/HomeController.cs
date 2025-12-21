@@ -13,20 +13,20 @@ public class HomeController(DB db) : Controller
         // Get the first featured movie that has at least one showtime
         var featured = db.Movies
                          .Include(m => m.Showtimes) // include showtimes
-                         .Where(m => m.Showtimes.Any()) // only movies with showtimes
+                         .Where(m => m.Showtimes.Any(s => s.StartDateTime >= DateTime.Now)) // Only movies with showtimes with the StartDateTime later than now.
                          .OrderByDescending(m => m.ReleaseDate)
                          .FirstOrDefault();
 
         // Get movies for "Now Showing" that have showtimes
         var nowShowing = db.Movies
                            .Include(m => m.Showtimes)
-                           .Where(m => m.Showtimes.Any())
+                           .Where(m => m.Showtimes.Any(s => s.StartDateTime >= DateTime.Now))
                            .OrderByDescending(m => m.ReleaseDate)
                            .ToList();
 
         // Send them to the view
         ViewBag.Featured = featured;
-        return View(nowShowing); // pass the list of movies as the model
+        return View(nowShowing); // Pass the list of movies as the model.
     }
 
     // GET: Home/Both

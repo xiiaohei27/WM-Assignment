@@ -9,11 +9,11 @@ public class MovieController(DB db) : Controller
 {
     public IActionResult Index(string genre)
     {
-        ViewBag.Genres = db.Movies.Where(m => m.Showtimes.Any()).Select(m => m.Genre).Distinct(); // Distinct removes the duplicates.
+        ViewBag.Genres = db.Movies.Where(m => m.Showtimes.Any(s => s.StartDateTime >= DateTime.Now)).Select(m => m.Genre).Distinct(); // Distinct removes the duplicates.
         var m = db.Movies
               .Include(m => m.Showtimes)
               .Where(m =>
-                     m.Showtimes.Any() &&
+                     m.Showtimes.Any(s => s.StartDateTime >= DateTime.Now) &&
                      (m.Genre == genre || genre == null))
               .ToList();
 

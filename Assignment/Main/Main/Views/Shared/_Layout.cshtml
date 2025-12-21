@@ -54,31 +54,35 @@
         <div class="container">
             <div class="navbar-collapse collapse show">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Movie" asp-action="Index"><i class="bi bi-film"></i> Movies</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Food" asp-action="Index"><i class="bi bi-cup-straw"></i> Food &amp; Beverage</a>
-                    </li>
-                    <li class="nav-item position-relative">
-                        @{
-                            var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
-                            var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
-                        }
-                        <a class="nav-link" asp-controller="Food" asp-action="Cart">
-                            <i class="bi bi-cart"></i> Cart
-                            @if (cartCount > 0)
-                            {
-                                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">@cartCount</span>
+
+                    @if (!User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Movie" asp-action="Index"><i class="bi bi-film"></i> Movies</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Food" asp-action="Index"><i class="bi bi-cup-straw"></i> Food &amp; Beverage</a>
+                        </li>
+                        <li class="nav-item position-relative">
+                            @{
+                                var cart = Context.Session.GetObject<List<Main.CartItem>>("FoodCart");
+                                var cartCount = cart?.Sum(c => c.Quantity) ?? 0;
                             }
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Ticket" asp-action="History"><i class="bi bi-clock-history"></i> History</a>
-                    </li>
+                            <a class="nav-link" asp-controller="Food" asp-action="Cart">
+                                <i class="bi bi-cart"></i> Cart
+                                @if (cartCount > 0)
+                                {
+                                    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle">@cartCount</span>
+                                }
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Ticket" asp-action="History"><i class="bi bi-clock-history"></i> History</a>
+                        </li>
+                    }
 
                     @if (User.IsInRole("Admin"))
                     {

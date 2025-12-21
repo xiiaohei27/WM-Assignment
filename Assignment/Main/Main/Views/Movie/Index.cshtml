@@ -2,6 +2,7 @@
 
 @{
     ViewBag.Title = "Movie | Index";
+    var genres = ViewBag.Genres as IEnumerable<string> ?? new List<string>();
 }
 
 <div class="container my-4">
@@ -12,7 +13,7 @@
            data-ajax-loading="#loader"
            href="?">All</a>
 
-        @foreach (var g in ViewBag.Genres)
+        @foreach (var g in genres)
         {
             <a class="btn btn-outline-primary btn-sm me-1 mb-1"
                data-ajax="true"
