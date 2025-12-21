@@ -149,6 +149,33 @@ public class AdminController(DB db, Helper hp) : Controller
         return RedirectToAction(nameof(Members));
     }
 
+    [HttpGet]
+    public JsonResult GetMembersByFilter(string? search)
+    {
+        var members = db.Users.OfType<Member>().AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            members = members.Where(m =>
+                m.Username.Contains(search) ||
+                m.Email.Contains(search));
+        }
+
+        var result = members
+            .OrderBy(m => m.Username)
+            .Select(m => new
+            {
+                id = m.Id,
+                username = m.Username,
+                email = m.Email,
+                image = m.Image,
+                isEmailVerified = m.IsEmailVerified
+            })
+            .ToList();
+
+        return Json(result);
+    }
+
     // ============================================================================
     // FOOD CATEGORY MANAGEMENT
     // ============================================================================

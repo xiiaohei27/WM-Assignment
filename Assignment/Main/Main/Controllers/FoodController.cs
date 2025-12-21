@@ -400,6 +400,40 @@ public class FoodController : Controller
         return View(foodItems);
     }
 
+    [HttpGet]
+    public JsonResult GetFoodItemsByFilter(string? categoryId, string? search)
+    {
+        var items = db.FoodItems
+            .Include(f => f.Category)
+            .Where(f => f.IsAvailable)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(categoryId))
+        {
+            items = items.Where(f => f.CategoryId == categoryId);
+        }
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            items = items.Where(f => f.Name.Contains(search));
+        }
+
+        var result = items
+            .OrderBy(f => f.Name)
+            .Select(f => new
+            {
+                id = f.Id,
+                name = f.Name,
+                description = f.Description,
+                price = f.Price,
+                image = f.Image,
+                categoryName = f.Category.Name
+            })
+            .ToList();
+
+        return Json(result);
+    }
+
     [Authorize(Roles = "Member")]
     [HttpPost]
     public IActionResult Select(Dictionary<string, int> quantities)
